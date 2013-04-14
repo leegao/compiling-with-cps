@@ -1,0 +1,5 @@
+let timesa = (^f. ^m. ^n. (ifp m then (n + (((f f) (m + -1)) n)) else 0)) in
+let times = (timesa timesa) in
+let facta = (^f. ^n. (ifp n then ((times n) ((f f) (n+ -1)))  else 1)) in
+let factorial = (facta facta) in
+(factorial 4)
