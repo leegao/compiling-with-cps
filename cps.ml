@@ -38,7 +38,10 @@ let rec cp_c (c:Il1.c) : Il1.c =
     Il1.Call(cp_v v0, cp_v v1, cp_v v2)
   | Il1.App(Il1.Lam(x,c'), Il1.Var y) ->
     (*Copy Propagate*)
-    failwith (x^y)
+    if x = y then
+      c'
+    else
+      Il1.subst_c (Il1.Var y) x c'
   | Il1.App(v0,v1) ->
     Il1.App(cp_v v0, cp_v v1)
 and cp_e (e:Il1.e) : Il1.e =
