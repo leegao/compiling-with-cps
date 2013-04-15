@@ -5,9 +5,10 @@ open Format
 let pp = print_string
 
 type var = string
-type v = Int of int | Var of var | Fun of var * var * c | Halt | Lam of var * c
+type v = Int of int | Var of var | Fun of var * var * c | Halt | Lam of var * c | TLam of var list * c
 and  e = Val of v | Plus of v * v
 and  c = Let of var * e * c | Call of v * v * v | App of v * v
+and  def = var * v
 
 let rec spaces i =
   if i <= 0 then "" else " "^(spaces (i-1))
@@ -58,15 +59,22 @@ and print_v (v:v) (i:int): unit =
   | Lam(x,c) -> 
     pp "fun ";
     pp x;
-    pp " -> ";
-    print_c c (i+2)
+    pp " -> \n";
+    pp (spaces (i+2));
+    print_c c (i+2);
+    pp "\n";
+    pp (spaces i)
   | Fun(x,k,c) ->
     pp "fun ";
     pp x;
     pp ",";
     pp k;
-    pp " -> ";
-    print_c c (i+2)
+    pp " -> \n";
+    pp (spaces (i+2));
+    print_c c (i+2);
+    pp "\n";
+    pp (spaces i)
+    
 module VarSet = Set.Make(struct
   type t = var
   let compare = Pervasives.compare
