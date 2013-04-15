@@ -67,5 +67,18 @@ and close_e (bij:var -> int) (n:int) (e:e) (p:v) : (var * e) list * e =
   | Val v -> ([], close_v bij n v p)
   | Plus(v1,v2) -> 
     let x0 = fresh "x" and x1 = fresh "x" in
-	([(x0,close_v bij n v1 p); (x1,close_v bij n v2 p)], Plus(Var x0, Var x1))
+    ([(x0,close_v bij n v1 p); (x1,close_v bij n v2 p)], Plus(Var x0, Var x1))
+  | Tuple(vs) ->
+    let rec helper vs xs = 
+      match vs with
+      | v::tl ->
+        let x = fresh "x" in
+        let (defs,e') = helper tl (Var x::xs) in
+        ((x,close_v bij n v p)::defs, e')
+      | [] ->
+        ([], Tuple(List.rev xs)) in
+    helper vs []
+  | Index(i,v) ->
+    let x = fresh "x" in
+    ([x,close_v bij n v p], Index(i, Var x))
 	
