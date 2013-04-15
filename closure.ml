@@ -63,5 +63,9 @@ let rec close_v (bij:var -> int) (n:int) (v:v) (p:v) : e =
 and close_c (bij:var -> int) (n:int) (c:c) (p:v) : c =
   failwith "implement me!"
 and close_e (bij:var -> int) (n:int) (e:e) (p:v) : (var * e) list * e =
-  failwith "implement me!"
+  match e with
+  | Val v -> ([], close_v bij n v p)
+  | Plus(v1,v2) -> 
+    let x0 = fresh "x" and x1 = fresh "x" in
+	([(x0,close_v bij n v1 p); (x1,close_v bij n v2 p)], Plus(Var x0, Var x1))
 	
