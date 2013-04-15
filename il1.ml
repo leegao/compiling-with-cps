@@ -1,10 +1,72 @@
 (* A simple interpreter for the lambda calculus *)
 
+open Format
+
+let pp = print_string
+
 type var = string
 type v = Int of int | Var of var | Fun of var * var * c | Halt | Lam of var * c
 and  e = Val of v | Plus of v * v
 and  c = Let of var * e * c | Call of v * v * v | App of v * v
 
+let rec spaces i =
+  if i <= 0 then "" else " "^(spaces (i-1))
+
+let rec print_c (c:c) (i:int): unit = 
+  (* indent only on \n *)
+  (match c with
+  | Let(x,e',c') ->
+    pp "let ";
+    pp x;
+    pp " = (\n";
+    pp (spaces (i+2));
+    print_e e' (i+2);
+    pp "\n";
+    pp (spaces i);
+    pp ") in \n";
+    pp (spaces (i+2));
+    print_c c' (i+2);
+    pp "\n"
+  | App(v1,v2) ->
+    pp "(";
+    print_v v1 i;
+    pp ")(";
+    print_v v2 i;
+    pp ")"
+  | Call(v1,v2,v3) ->
+    pp "(";
+    print_v v1 i;
+    pp ")(";
+    print_v v2 i;
+    pp ")(";
+    print_v v3 i;
+    pp ")")
+and print_e (e:e) (i:int) : unit =
+  match e with
+  | Val v -> print_v v i
+  | Plus(v1,v2) ->
+    pp "(";
+    print_v v1 i;
+    pp ") + (";
+    print_v v2 i;
+    pp ")"
+and print_v (v:v) (i:int): unit =
+  match v with
+  | Var x -> pp x
+  | Int n -> pp (string_of_int n)
+  | Halt  -> pp "halt"
+  | Lam(x,c) -> 
+    pp "fun ";
+    pp x;
+    pp " -> ";
+    print_c c (i+2)
+  | Fun(x,k,c) ->
+    pp "fun ";
+    pp x;
+    pp ",";
+    pp k;
+    pp " -> ";
+    print_c c (i+2)
 module VarSet = Set.Make(struct
   type t = var
   let compare = Pervasives.compare

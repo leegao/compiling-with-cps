@@ -1,2 +1,2 @@
-let f = ^x. 1+x in (f 6)
+let f = fun x -> 1+x in (f 6)
 
