@@ -6,7 +6,7 @@ let pp = print_string
 
 type var = string
 type v = Int of int | Var of var | Fun of var * var * c | Halt | Lam of var * c | TLam of var list * c
-and  e = Val of v | Plus of v * v
+and  e = Val of v | Plus of v * v | Tuple of v list | Index of int * v
 and  c = Let of var * e * c | Call of v * v * v | App of v * v
 and  def = var * v
 
@@ -51,9 +51,20 @@ and print_e (e:e) (i:int) : unit =
     pp ") + (";
     print_v v2 i;
     pp ")"
+  | Tuple(vs) ->
+    let rec helper vs =
+      match vs with
+      | v::tl ->
+        print_v v i;
+        pp ", ";
+        helper tl
+      | _ -> () in
+    pp "[";
+    helper vs;
+    pp "]"
 and print_v (v:v) (i:int): unit =
   match v with
-  | Var x -> pp x
+  | Var x -> pp ("."^x)
   | Int n -> pp (string_of_int n)
   | Halt  -> pp "halt"
   | Lam(x,c) -> 

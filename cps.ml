@@ -30,7 +30,20 @@ let rec translate1 (e:exp) (k:Il1.v): Il1.c =
   | Plus(e1,e2) ->
     let n1 = fresh "n" and n2 = fresh "m" and z = fresh "z" in
     translate1 e1 (Il1.Lam(n1, translate1 e2 (Il1.Lam(n2, Il1.Let(z, Il1.Plus(Il1.Var n1, Il1.Var n2), Il1.App(k, Il1.Var z))))))
-    
+  | Tuple(lst) ->
+    let rec helper l (tp:Il1.v list) : Il1.c =
+      match l with
+      | hd::tl ->
+        let v = fresh "v" in
+        translate1 hd (Il1.Lam(v, helper tl ((Il1.Var v)::tp)))
+      | [] ->
+        let t = fresh "t" in
+        Il1.Let(t, Il1.Tuple (List.rev tp), Il1.App(k, Il1.Var t)) in
+    helper lst []
+  | Index(n, e') -> 
+    let t = fresh "t" in
+    let y = fresh "y" in
+    translate1 e' (Il1.Lam(t, Il1.Let(y, Il1.Index(n,Il1.Var t), Il1.App(k, Il1.Var y))))
 (* 
   Lambda Hoisting without closure conversion
     The point is to lift all lambdas
@@ -59,6 +72,17 @@ and hoist_e (e:Il1.e) : Il1.e * Il1.def list =
     let (v1', l1) = hoist_v v1 in
     let (v2', l2) = hoist_v v2 in
     (Il1.Plus(v1',v2'), l1@l2)
+  | Il1.Tuple (vs) ->
+    let (vs', defs) = List.fold_left (
+      fun a v -> 
+        let (vs, defs) = a in
+        let (v0,def0) = hoist_v v in 
+        ((v0)::(vs), (def0)@(defs))
+    ) ([],[]) vs in
+    (Il1.Tuple (List.rev vs'), defs)
+  | Il1.Index(n,v) ->
+    let (v',l) = hoist_v v in
+    (Il1.Index(n,v'), l)
 and hoist_v (v:Il1.v) : Il1.v * Il1.def list =
   match v with
   | Il1.Var x -> 
@@ -85,13 +109,14 @@ and hoist_v (v:Il1.v) : Il1.v * Il1.def list =
 (* Implement this! *)
 let translate(e: exp): tprog =
   let c = translate1 e Il1.Halt in
-  
+  (*
   let c = cp_c c in
   let c = lp_c c in
   let c = ep_c c in
   
+  *)
   let (c', defs) = hoist_c c in
-  Il1.print_c c' 0;
+  Il1.print_v (snd (List.nth defs 1)) 0;
   Il1.pp "\n";
   match e with
     _ -> raise (Fail "Implement me!")
