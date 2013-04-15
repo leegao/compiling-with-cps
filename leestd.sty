@@ -1,0 +1,63 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{leestd}
+
+\definecolor{light-gray}{gray}{0.95}
+\newcommand {\conf} [1] {\ensuremath{\left\langle #1 \right\rangle}}
+\newcommand {\bstep} {\ensuremath{\Downarrow}}
+\newcommand {\bstepA} {\bstep_{ A}}
+\newcommand {\bstepB} {\bstep_{ B}}
+\newcommand {\bstepC} {\bstep_{ C}}
+\newcommand {\co} [1] {\ensuremath{\operatorname{\bf #1}}}
+\newcommand {\coo} [1] {\ensuremath{\operatorname{\mathsf{#1}}}}
+%\newcommand {\co} [1] {\coo{#1}}
+\newcommand {\pp}  {\ensuremath{\mbox{\footnotesize{++}}}}
+\newcommand {\Skip} {\co{skip}}
+\newcommand {\Not} {\co{not}}
+\newcommand {\Ifc}[3] {\co{if} (#1) \co{then} #2 \co{else} #3}
+\newcommand {\Whilec}[2] {\co{while} #1 \co{do} #2}
+\newcommand {\Input} {\co{input}}
+\newcommand {\Break} {\co{break}}
+\newcommand {\Continue} {\co{continue}}
+\newcommand{\True}{\co{True}}
+\newcommand{\False}{\co{False}}
+\newcommand{\Or}{\co{or}}
+\newcommand{\Let}[1]{\coo{let} #1 \coo{in}}
+\newcommand{\LetRec}[1]{\coo{let rec} #1 \coo{in}}
+\newcommand{\vVec}[1]{\overrightarrow{#1}}
+\newcommand{\Lam}{\ensuremath{{\lambda}}}
+\newcommand{\Ref}{\coo{ref}}
+\newcommand{\Int}{\coo{int}}
+\newcommand{\bool}{\coo{bool}}
+\newcommand{\Bool}{\bool}
+\newcommand{\Unit}{\coo{unit}}
+\newcommand{\Rec}[1]{\left\{#1\right\}}
+\newcommand{\Pack}[2]{\ensuremath{\co{pack} \Rec{#1} \co{as} \exists#2}}
+\newcommand{\Unpack}[2]{\ensuremath{\co{unpack} #1 \co{in} #2}}
+\newcommand{\pa}[1]{\left(#1\right)}
+\newcommand{\tree}{\coo{tree}}
+\newcommand{\fa}{\coo{\forall}}
+\newcommand{\more}[1]{\vdots\hspace{-1mm}~^{#1}}
+\newcommand{\f}[1]{\textsc{#1}}
+\newcommand{\g}[1]{\textsf{#1}}
+\newcommand{\C}[1]{\trans{C}{#1}}
+\newcommand{\B}[1]{\trans{B}{#1}}
+\newcommand{\A}[1]{\trans{A}{#1}}
+\newcommand{\Match}[3]{\ensuremath{\co{match} #1 \co{with} \pa{\co{nil} \Rightarrow #2} ~ \pa{x :: y \Rightarrow #3}}}
+
+\newcommand{\trans}[2]{\ensuremath{\mathcal{#1}\llbracket #2\rrbracket}}
+
+\newcommand{\wlp}{\ensuremath{\text{\f{wlp}}}}
+\tikzstyle{every picture}+=[remember picture]
+\newcommand\tmark[2]{%
+  \ensuremath{\tikz[baseline] \node[anchor=base] (#1) {#2};}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+
+\tikzstyle{every picture}+=[remember picture]
+\newcommand{\tm}[2]{\tmark{#1}{\ensuremath{#2}}}
+\newcommand{\tr}[2]{\tmark{#1}{\color{red}{\ensuremath{#2}}}}
+\newcommand{\arr}[1]{\begin{array}{cccccccccc} #1\end{array}}
+\newcommand{\mat}[1]{\left(\arr{#1}\right)}
+

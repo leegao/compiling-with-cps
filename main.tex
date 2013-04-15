@@ -1,0 +1,191 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fullpage}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+%\usepackage{bussproofs}
+\usepackage{enumitem}
+\usepackage{centernot}
+\usepackage{mathpartir}
+\usepackage{xspace}
+\usepackage{stmaryrd}
+\usepackage{mathtools}
+\usepackage{listings}
+\usepackage{tikz-qtree}
+\usepackage{tikz}
+\usetikzlibrary{automata,trees,fit,backgrounds,shapes,snakes}
+\usetikzlibrary{decorations.shapes}
+
+\author{Lee Gao (lg342)}
+\title{Closure Conversion in IL1}
+\date{\today}
+
+\definecolor{light-gray}{gray}{0.95}
+\newcommand {\conf} [1] {\ensuremath{\left\langle #1 \right\rangle}}
+\newcommand {\bstep} {\ensuremath{\Downarrow}}
+\newcommand {\bstepA} {\bstep_{ A}}
+\newcommand {\bstepB} {\bstep_{ B}}
+\newcommand {\bstepC} {\bstep_{ C}}
+%\newcommand {\co} [1] {\ensuremath{\operatorname{\bf #1}}}
+\newcommand {\coo} [1] {\ensuremath{\operatorname{\mathsf{#1}}}}
+\newcommand {\co} [1] {\coo{#1}}
+\newcommand {\pp}  {\ensuremath{\mbox{\footnotesize{++}}}}
+\newcommand {\Skip} {\co{skip}}
+\newcommand {\Not} {\co{not}}
+\newcommand {\If}[3] {\co{if} (#1) \co{then} #2 \co{else} #3}
+\newcommand {\While}[2] {\co{while} #1 \co{do} #2}
+\newcommand {\Repeat}[2] {\co{repeat} #1 \co{do} #2}
+\newcommand {\Input} {\co{input}}
+\newcommand {\Break} {\co{break}}
+\newcommand {\Continue} {\co{continue}}
+\newcommand{\True}{\co{True}}
+\newcommand{\False}{\co{False}}
+\newcommand{\Or}{\co{or}}
+\newcommand{\Let}[1]{\coo{let} #1 \coo{in} }
+\newcommand{\Lam}{\ensuremath{{\lambda}}}
+\newcommand{\Ref}{\coo{ref}}
+\newcommand{\Int}{\coo{int}}
+\newcommand{\bool}{\coo{bool}}
+\newcommand{\Bool}{\bool}
+\newcommand{\Unit}{\coo{unit}}
+\newcommand{\Rec}[1]{\left\{#1\right\}}
+\newcommand{\pa}[1]{\left(#1\right)}
+\newcommand{\ba}[1]{\left\langle #1\right\rangle}
+\newcommand{\tree}{\coo{tree}}
+\newcommand{\fa}{\coo{\forall}}
+\newcommand{\more}[1]{\vdots\hspace{-1mm}~^{#1}}
+\newcommand{\f}[1]{\textsc{#1}}
+\newcommand{\g}[1]{\textsf{#1}}
+\newcommand{\finite}{\co{finite}}
+\newcommand{\lift}[1]{\left\lfloor #1 \right\rfloor}
+
+\newcommand{\trans}[2]{\ensuremath{\mathcal{#1}\llbracket #2\rrbracket}}
+
+\newtheorem*{lemma}{Lemma}
+\newtheorem*{theorem}{Theorem}
+\newtheorem*{definition}{Definition}
+
+\lstset{ %
+  language=Caml,                % the language of the code
+  basicstyle=\footnotesize,           % the size of the fonts that are used for the code
+  numbers=left,                   % where to put the line-numbers
+  numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
+  stepnumber=1,                   % the step between two line-numbers. If it's 1, each line 
+                                  % will be numbered
+  numbersep=10pt,                  % how far the line-numbers are from the code
+  backgroundcolor=\color{white},      % choose the background color. You must add \usepackage{color}
+  showspaces=false,               % show spaces adding particular underscores
+  showstringspaces=false,         % underline spaces within strings
+  showtabs=false,                 % show tabs within strings adding particular underscores
+  mathescape=true,
+  frame=leftline,                   % adds a frame around the code
+  rulecolor=\color{gray},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  tabsize=2,                      % sets default tabsize to 2 spaces
+  captionpos=t,                   % sets the caption-position to bottom
+  breaklines=true,                % sets automatic line breaking
+  breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+  title=\lstname,                   % show the filename of files included with \lstinputlisting;
+                                  % also try caption instead of title
+  escapeinside={\%*}{*)},            % if you want to add LaTeX within your code
+  morekeywords={*,...},              % if you want to add more keywords to the set
+  deletekeywords={...}              % if you want to delete keywords from the given language
+}
+
+\newcommand\tmark[2]{%
+  \ensuremath{\tikz[baseline] \node[anchor=base] (#1) {#2};}}
+\tikzstyle{every picture}+=[remember picture]
+\newcommand{\tm}[2]{\tmark{#1}{\ensuremath{#2}}}
+\newcommand{\tr}[2]{\tmark{#1}{\color{red}{\ensuremath{#2}}}}
+\newcommand{\arr}[1]{\begin{array}{cccccccccc} #1\end{array}}
+\newcommand{\mat}[1]{\left(\arr{#1}\right)}
+
+\allowdisplaybreaks
+
+\begin{document}
+\tikzset{every tree node/.style={minimum width=2em,draw,circle},
+         blank/.style={draw=none},
+         edge from parent/.style=
+         {draw, edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}},
+         level distance=1.5cm}
+\maketitle
+\setlength{\parindent}{0pt}
+
+Given the language \f{il1} detailed below
+\begin{align*}
+v &::= n \mid x \mid \lambda kx.c \mid \lambda x.c \mid \g{halt} \\
+e &::= v \mid v_0 + v_1 \mid (v_0,\cdots, v_n) \mid \pi_n v \\
+c &::= \Let{x = e}{c} \mid v_0~v_1~v_2 \mid v_0 ~ v_1
+\end{align*}
+with the natural CBV semantic, we want to do a closure-conversion translation so that no abstractions contain free variables. To do this, we will need a function
+$$
+\ba{\cdot} : \g{var} \to \mathbb{N}
+$$
+which uniquely maps a given variable $x$ to a natural number such that it is as compact as possible. ($\ba{\cdot} = \min_{f~\text{bijection}} ~ \max_{x \in \g{var}} f(x)$) We can do this easily by inspection of the program.
+
+Now, we will represent a closure environment $\rho$ as a tuple in \f{il1} where we can represent
+$$
+\trans{}{x} \rho = \pi_{\ba{x}} ~ \rho
+$$
+
+There's an immediate problem: $x$ is in the $v$ domain, but its translation is now in the $e$ domain! This is unsettling, but we can overcome this.
+
+We will define 3 closure conversion translation functions corresponding to each of the $v$, $e$, and the $c$ domains. The point is that the closure conversion will still be embeded in \f{il1}, from which we can just do an immediate lambda lifting to get to \f{il2} (with some minor reordering)
+\begin{align*}
+\trans{V}{v}\rho &: e \\
+\trans{E}{e}\rho &: (\g{var} \times e) ~ \g{list} \times e \\
+\trans{C}{c}\rho &: c
+\end{align*}
+In order to lift values, we will need to be able to do expression-level operations on them, so we promote them during translation. In order to lift expressions, we may need to bind to expressions, so we will need to keep track of those bindings for the commands. Commands are just business as usual. Note that because we're not allowed to have applications in values and expressions, we need to $\eta$ reduce these translations! (So in \f{OCaml}, you will literally add this in as part of the translation function, not as an application in the output)
+
+\section{Values}
+We start with the intuitive cases
+\begin{align*}
+\trans{V}{n}\rho &= n \\
+\trans{V}{x} \rho &= \pi_{\ba{x}}~\rho \\
+\end{align*}
+next, we need to translate a $\lambda$. We will represent thses closures as a pair of environment and the lambda code:
+\begin{lstlisting}
+$\trans{V}{\lambda kx.c}\rho$ = ($\rho$, $\lambda p.$ let $\rho'$ = $\pi_1$ p in
+                 let y = $\pi_2$ p in
+                 let $x_i$ = $\pi_i \rho'$ in  ($\forall x_i \in \g{dom}(\ba{\cdot})$)
+                 let $x_{\ba{x}}$ = y in
+                 let $\rho''$ = $(x_1,\cdots,x_n)$ in
+                 $\trans{C}{c}\rho''$)
+\end{lstlisting}
+convince yourself that this is okay. The case for the non-administrative lambdas are similar (add in a case for $x_{\ba{k}}$ too), so all we're left with is just
+$$
+\trans{V}{\g{halt}} \rho = \g{halt}
+$$
+
+\section{Expressions}
+We will use the notation
+$$
+\Let{x_0 = e_0,\cdots,x_n = e_n}{e}
+$$
+to denote the pair
+$$
+([(x_0,e_0), \cdots, (x_n,e_n)], e)
+$$
+let's get to the translation
+\begin{align*}
+\trans{E}{v}\rho &= (\varnothing, \trans{V}{v}\rho) \\
+\trans{E}{v_0 + v_1} \rho &= \Let{x_0 = \trans{V}{v_0}\rho, x_1 = \trans{V}{v_1}\rho}{x_0 + x_1} \\
+\trans{E}{(v_1,\cdots,v_n)} \rho &= \Let{x_i = \trans{V}{v_i}\rho}{(x_1,\cdots, x_n)} \\
+\trans{E}{\pi_n v}\rho &= \Let{x_0 = \trans{V}{v}\rho}{\pi_n x_0}
+\end{align*}
+
+\section{Commands}
+This is the tricky one. Let's start with applications:
+\begin{lstlisting}
+$\trans{C}{v_0~v_1} \rho$ = let $fn$ = $\trans{V}{v_0}\rho$ in
+          let $\rho'$ = $\pi_1 fn$ in
+          let $f$ = $\pi_2 fn$ in
+          let $v' = \trans{V}{v_1} \rho$ in
+          let $arg$ = $(\rho',v')$ in
+          $f$ $arg$
+\end{lstlisting}
+the function call with continuation version is also similar. Next, we need to do the \g{let} case. This is the tricky one because we need to capture the new binding inside the environment as well!
+\end{document}
