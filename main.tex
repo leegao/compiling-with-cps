@@ -188,4 +188,15 @@ $\trans{C}{v_0~v_1} \rho$ = let $fn$ = $\trans{V}{v_0}\rho$ in
           $f$ $arg$
 \end{lstlisting}
 the function call with continuation version is also similar. Next, we need to do the \g{let} case. This is the tricky one because we need to capture the new binding inside the environment as well!
+
+Suppose that in $\f{OCaml}$, we already have $[\Let{y_i = e_i}{e'}] = \trans{E}{e}\rho$, then we can make the translation as such
+\begin{lstlisting}
+$\trans{C}{\Let{x=e}{c}} \rho $ = let $y_i$ = $e_i$ in
+               let $y$ = $e'$ in
+               let $x_i$ = $\pi_i \rho$ in
+               let $x_{\ba{x}}$ = $y$ in
+               let $\rho'$ = $(x_1, \cdots, x_n)$ in
+               $\trans{C}{c} \rho'$
+\end{lstlisting}
+In the above, the expansion $\Let{y_i = e_i}{\cdots}$ is required in order to compute $y = e'$. Wlog, the case for \g{ifp} is much easier.
 \end{document}
