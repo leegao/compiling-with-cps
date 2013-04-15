@@ -7,6 +7,7 @@ set ocamlflags=-g
 
 %ocamlc% %ocamlflags% -c types.mli
 %ocamlc% %ocamlflags% -c il1.ml
+%ocamlc% %ocamlflags% -c closure.ml
 %ocamlc% %ocamlflags% -c optimize.ml
 %ocamlc% %ocamlflags% -c pprint.ml
 %ocamlyacc% srcParser.mly
@@ -20,4 +21,4 @@ set ocamlflags=-g
 %ocamlc% %ocamlflags% -c eval.ml
 %ocamlc% %ocamlflags% -c main.ml
 
-%ocamlc% -o cps.exe %ocamlflags% pprint.cmo srcParser.cmo srcLexer.cmo il1.cmo optimize.cmo cps.cmo eval.cmo main.cmo
+%ocamlc% -o cps.exe %ocamlflags% pprint.cmo srcParser.cmo srcLexer.cmo il1.cmo closure.cmo optimize.cmo cps.cmo eval.cmo main.cmo
