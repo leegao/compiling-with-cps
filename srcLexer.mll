@@ -14,13 +14,21 @@ rule lex =
       | newline     { lineno := !lineno + 1; lex lexbuf }
       | ws+        { lex lexbuf }
       | "+"        { PLUS }
+      | "#"        { POUND }
       | "("        { LPAREN }
       | ")"        { RPAREN }
-      | "fun"        { LAM }
-      | "->"        { DOT }
+      | "["        { LBRACK }
+      | "]"        { RBRACK }
+      | ","        { COMMA }
+      | "cwcc"      { CWCC }
+      | "^"        { LAM }
+      | "."        { DOT }
       | "let"      { LET }
       | "="        { EQUALS }
       | "in"       { IN }
+      | "ifp"       { IFP }
+      | "then"       { THEN }
+      | "else"       { ELSE }
       | alpha+     { VAR(Lexing.lexeme lexbuf) }
       | '-'?digit+ { INT(int_of_string(Lexing.lexeme lexbuf)) }
       | eof        { EOF }

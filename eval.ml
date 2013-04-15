@@ -7,6 +7,7 @@ type fnclosure =
 
 type tval = 
     TVFn of var list * tcom * (fnclosure list)
+  | TVTup of tval list
   | TVNum of int
   | TVHalt
 
@@ -27,14 +28,27 @@ let rec evalVar fncontext context x =
 let evalExp fncontext context exp = 
   match exp with
     TVar(x) -> evalVar fncontext context x
+  | TTuple(xs) -> TVTup(List.map (evalVar fncontext context) xs)
   | TNum(i) -> TVNum(i)
   | THalt -> TVHalt
+  | TIndex(i, x) -> 
+      let v = evalVar fncontext context x in
+      (match v with
+	TVTup(xs) -> 
+	  (* return the evalutation of vth element of cs, first index is 1 *)
+	  List.nth xs (i-1)
+      | _ ->  raise (EvalError("Index of non-tuple")))
   | TPlus(x,y) ->
       let v1 = evalVar fncontext context x in
       let v2 = evalVar fncontext context y in
       (match (v1, v2) with 
 	TVNum(i), TVNum(j) -> TVNum(i + j)
       | _ ->  raise (EvalError("Adding non-numbers")))
+  | TIfp(x, y, z) ->
+      let v = evalVar fncontext context x in
+      (match v with 
+	TVNum(i) -> evalVar fncontext context (if i > 0 then y else z)
+      | _ ->  raise (EvalError("ifp test on a non-number")))
 
 let rec evalCom fncontext (context:(var * tval) list) com =
   let rec buildContext formals args =

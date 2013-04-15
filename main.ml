@@ -30,6 +30,14 @@ let rec ppTV tv =
 	| b::[] -> (pp b)
       in
       (pp "function( "; ppvarlist formals; pp ")"; ppTCom body)
+  | TVTup(vs) -> (pp"("; 
+		  let rec pptupl = function
+		      [] -> ()
+		    |	a::b::t -> (ppTV a; pp ", "; pptupl (b::t))
+		    |	b::[] -> (ppTV b)
+		  in
+		  pptupl vs;
+		  pp ")")
   | TVNum(i) -> print_int i
   | TVHalt -> pp "halt"
 

@@ -101,7 +101,7 @@ and ep_v (v:Il1.v) : Il1.v =
   | _ -> v
 
 (* 
-  Lambda Hoisting
+  Lambda Hoisting without closure conversion
     The point is to lift all lambdas
 *)
 let rec hoist_c (c:Il1.c) : Il1.c * Il1.def list =
