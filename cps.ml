@@ -5,10 +5,7 @@ open Optimize
 
 exception Fail of string
 
-let id =  ref 0
-let fresh x = 
-  id := !id + 1;
-  ("$"^x)^(string_of_int (!id))
+let fresh = Closure.fresh
 
 let rec translate1 (e:exp) (k:Il1.v): Il1.c =
   match e with
