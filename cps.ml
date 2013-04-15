@@ -154,14 +154,14 @@ and hoist_v (v:Il1.v) : Il1.v * Il1.def list =
 (* Implement this! *)
 let translate(e: exp): tprog =
   let c = translate1 e Il1.Halt in
+  
+  let c = cp_c c in
+  let c = lp_c c in
+  let c = ep_c c in
+  
   let (c', defs) = hoist_c c in
   Il1.print_c c' 0;
   Il1.pp "\n";
-  (*let c = cp_c c in
-  let c = lp_c c in
-  let c = ep_c c in
-  Il1.print_c c 0;
-  Il1.pp "\n";*)
   match e with
     _ -> raise (Fail "Implement me!")
 
