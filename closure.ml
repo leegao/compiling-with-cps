@@ -97,4 +97,13 @@ and close_c (bij:var -> int) (n:int) (c:c) (p:v) : c =
       | [] ->
         c in
     helper lets c''
+  | App(v0,v1) ->
+    let fn = fresh "fn" and p' = fresh "p'" and f = fresh "f" and v' = fresh "v'"
+    and arg = fresh "arg" in
+    let c' = App(Var f, Var arg) in
+    let c' = Let(arg, Tuple([Var p'; Var v']), c') in
+    let c' = Let(v', close_v bij n v1 p, c') in
+    let c' = Let(f, Index(2,Var fn), c') in
+    let c' = Let(p', Index(1,Var fn), c') in
+    Let(fn, close_v bij n v0 p, c')
 	
