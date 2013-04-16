@@ -102,6 +102,14 @@ and hoist_v (v:Il1.v) : Il1.v * Il1.def list =
     (* replace this lambda by f (no capturing of variables) *)
     let l' = ((f, Il1.Fun(x,k,c')))::l in
     (Il1.Var f, l')
+
+let rec lower_v (v:Il1.v) : (var * Il1.e) list * var =
+  match v with
+  | Il1.Var x ->
+    ([], x)
+  | _ ->
+    let x = fresh "n" in
+    ([x,Il1.Val v], x)
   
 (* Implement this! *)
 let translate(e: exp): tprog =
