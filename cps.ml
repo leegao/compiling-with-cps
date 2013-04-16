@@ -143,6 +143,10 @@ and lower_c c : Il1.c =
   | Il1.Let(x,e,c) ->
     let (l,e') = lower_e e in
     expand l (Il1.Let(x,e', lower_c c))
+  | Il1.App(v0,v1) ->
+    let (l0,x) = lower_v v0 in
+    let (l1,y) = lower_v v1 in
+    expand l0 (expand l1 (Il1.App(Il1.Var x, Il1.Var y)))
   
 (* Implement this! *)
 let translate(e: exp): tprog =
