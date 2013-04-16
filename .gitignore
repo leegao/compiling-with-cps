@@ -1,3 +1,5 @@
 *.cmi
 *.cmo
 *.exe
+*.log
+*.aux

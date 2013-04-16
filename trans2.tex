@@ -1,0 +1,131 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fullpage}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+%\usepackage{bussproofs}
+\usepackage{enumitem}
+\usepackage{centernot}
+\usepackage{mathpartir}
+\usepackage{xspace}
+\usepackage{stmaryrd}
+\usepackage{mathtools}
+\usepackage{listings}
+\usepackage{tikz-qtree}
+\usepackage{tikz}
+\usetikzlibrary{automata,trees,fit,backgrounds,shapes,snakes}
+\usetikzlibrary{decorations.shapes}
+
+\author{Lee Gao (lg342)}
+\title{Value Conversion in IL1 after Lambda Hoisting}
+\date{\today}
+
+\definecolor{light-gray}{gray}{0.95}
+\newcommand {\conf} [1] {\ensuremath{\left\langle #1 \right\rangle}}
+\newcommand {\bstep} {\ensuremath{\Downarrow}}
+\newcommand {\bstepA} {\bstep_{ A}}
+\newcommand {\bstepB} {\bstep_{ B}}
+\newcommand {\bstepC} {\bstep_{ C}}
+%\newcommand {\co} [1] {\ensuremath{\operatorname{\bf #1}}}
+\newcommand {\coo} [1] {\ensuremath{\operatorname{\mathsf{#1}}}}
+\newcommand {\co} [1] {\coo{#1}}
+\newcommand {\pp}  {\ensuremath{\mbox{\footnotesize{++}}}}
+\newcommand {\Skip} {\co{skip}}
+\newcommand {\Not} {\co{not}}
+\newcommand {\If}[3] {\co{if} (#1) \co{then} #2 \co{else} #3}
+\newcommand {\While}[2] {\co{while} #1 \co{do} #2}
+\newcommand {\Repeat}[2] {\co{repeat} #1 \co{do} #2}
+\newcommand {\Input} {\co{input}}
+\newcommand {\Break} {\co{break}}
+\newcommand {\Continue} {\co{continue}}
+\newcommand{\True}{\co{True}}
+\newcommand{\False}{\co{False}}
+\newcommand{\Or}{\co{or}}
+\newcommand{\Let}[1]{\coo{let} #1 \coo{in} }
+\newcommand{\Lam}{\ensuremath{{\lambda}}}
+\newcommand{\Ref}{\coo{ref}}
+\newcommand{\Int}{\coo{int}}
+\newcommand{\bool}{\coo{bool}}
+\newcommand{\Bool}{\bool}
+\newcommand{\Unit}{\coo{unit}}
+\newcommand{\Rec}[1]{\left\{#1\right\}}
+\newcommand{\pa}[1]{\left(#1\right)}
+\newcommand{\ba}[1]{\left\langle #1\right\rangle}
+\newcommand{\tree}{\coo{tree}}
+\newcommand{\fa}{\coo{\forall}}
+\newcommand{\more}[1]{\vdots\hspace{-1mm}~^{#1}}
+\newcommand{\f}[1]{\textsc{#1}}
+\newcommand{\g}[1]{\textsf{#1}}
+\newcommand{\finite}{\co{finite}}
+\newcommand{\lift}[1]{\left\lfloor #1 \right\rfloor}
+
+\newcommand{\trans}[2]{\ensuremath{\mathcal{#1}\llbracket #2\rrbracket}}
+
+\newtheorem*{lemma}{Lemma}
+\newtheorem*{theorem}{Theorem}
+\newtheorem*{definition}{Definition}
+
+\lstset{ %
+  language=Caml,                % the language of the code
+  basicstyle=\footnotesize,           % the size of the fonts that are used for the code
+  numbers=left,                   % where to put the line-numbers
+  numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
+  stepnumber=1,                   % the step between two line-numbers. If it's 1, each line 
+                                  % will be numbered
+  numbersep=10pt,                  % how far the line-numbers are from the code
+  backgroundcolor=\color{white},      % choose the background color. You must add \usepackage{color}
+  showspaces=false,               % show spaces adding particular underscores
+  showstringspaces=false,         % underline spaces within strings
+  showtabs=false,                 % show tabs within strings adding particular underscores
+  mathescape=true,
+  frame=leftline,                   % adds a frame around the code
+  rulecolor=\color{gray},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  tabsize=2,                      % sets default tabsize to 2 spaces
+  captionpos=t,                   % sets the caption-position to bottom
+  breaklines=true,                % sets automatic line breaking
+  breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+  title=\lstname,                   % show the filename of files included with \lstinputlisting;
+                                  % also try caption instead of title
+  escapeinside={\%*}{*)},            % if you want to add LaTeX within your code
+  morekeywords={*,...},              % if you want to add more keywords to the set
+  deletekeywords={...}              % if you want to delete keywords from the given language
+}
+
+\newcommand\tmark[2]{%
+  \ensuremath{\tikz[baseline] \node[anchor=base] (#1) {#2};}}
+\tikzstyle{every picture}+=[remember picture]
+\newcommand{\tm}[2]{\tmark{#1}{\ensuremath{#2}}}
+\newcommand{\tr}[2]{\tmark{#1}{\color{red}{\ensuremath{#2}}}}
+\newcommand{\arr}[1]{\begin{array}{cccccccccc} #1\end{array}}
+\newcommand{\mat}[1]{\left(\arr{#1}\right)}
+
+\allowdisplaybreaks
+
+\begin{document}
+\tikzset{every tree node/.style={minimum width=2em,draw,circle},
+         blank/.style={draw=none},
+         edge from parent/.style=
+         {draw, edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}},
+         level distance=1.5cm}
+\maketitle
+\setlength{\parindent}{0pt}
+
+Given the closure-conversion and then hoisted restricted language \f{il1} detailed below
+\begin{align*}
+v &::= n \mid x \mid \g{halt} \\
+e &::= v \mid v_0 + v_1 \mid (v_0,\cdots, v_n) \mid \pi_n v \\
+c &::= \Let{x = e}{c} \mid v_0~v_1~v_2 \mid v_0 ~ v_1
+\end{align*}
+
+we want to ``lift'' numbers and halt into expressions (as Val used in bindings only) and leave only variables as values, so in effect our language will now look like
+\begin{align*}
+v &::= x \\
+e &::= v \mid \g{val}(n) \mid \g{val}(\g{halt}) v_0 + v_1 \mid (v_0,\cdots, v_n) \mid \pi_n v \\
+c &::= \Let{x = e}{c} \mid v_0~v_1~v_2 \mid v_0 ~ v_1
+\end{align*}
+
+We want to define a set of ``lowering'' translation $\trans{LV}{v}, \trans{LE}{e}, \trans{LC}{c}$ with
+\end{document}
