@@ -36,30 +36,30 @@ let rec close_v (bij:var -> int) (n:int) (v:v) (p:v) : e =
   | Halt -> Val v
   | Lam(x,c) -> 
     let k = bij x in
-	let r = fresh "r" in
+    let r = fresh "r" in
     let p' = fresh "p'"  and y = fresh "y" and p'' = fresh "p''" in
-	let xs = make_fresh "x" n in
-	let c' = close_c bij n c (Var p'') in
-	let c' = Let(p'', Tuple(List.map (fun x -> Var x) xs), c') in
-	let c' = Let(List.nth xs k, Val (Var y), c') in
-	let c' = expand_xi xs 0 (gindex (Var p')) c' in
-	let c' = Let(y, Index(2,Var r), c') in
-	let c' = Let(p', Index(1,Var r), c') in
+    let xs = make_fresh "x" n in
+    let c' = close_c bij n c (Var p'') in
+    let c' = Let(p'', Tuple(List.map (fun x -> Var x) xs), c') in
+    let c' = Let(List.nth xs (k-1), Val (Var y), c') in
+    let c' = expand_xi xs 0 (gindex (Var p')) c' in
+    let c' = Let(y, Index(2,Var r), c') in
+    let c' = Let(p', Index(1,Var r), c') in
 	Tuple([p; Lam(r,c')])
   | Fun(x,k,c) -> 
     let a = bij x in
-	let b = bij k in
-	let r = fresh "r" in
+    let b = bij k in
+    let r = fresh "r" in
     let p' = fresh "p'"  and y = fresh "y" and p'' = fresh "p''" in
-	let xs = make_fresh "x" n in
-	let c' = close_c bij n c (Var p'') in
-	let c' = Let(p'', Tuple(List.map (fun x -> Var x) xs), c') in
-	let c' = Let(List.nth xs b, Val (Var k), c') in
-	let c' = Let(List.nth xs a, Val (Var y), c') in
-	let c' = expand_xi xs 0 (gindex (Var p')) c' in
-	let c' = Let(y, Index(2,Var r), c') in
-	let c' = Let(p', Index(1,Var r), c') in
-	Tuple([p; Fun(r,k,c')])
+    let xs = make_fresh "x" n in
+    let c' = close_c bij n c (Var p'') in
+    let c' = Let(p'', Tuple(List.map (fun x -> Var x) xs), c') in
+    let c' = Let(List.nth xs (b-1), Val (Var k), c') in
+    let c' = Let(List.nth xs (a-1), Val (Var y), c') in
+    let c' = expand_xi xs 0 (gindex (Var p')) c' in
+    let c' = Let(y, Index(2,Var r), c') in
+    let c' = Let(p', Index(1,Var r), c') in
+    Tuple([p; Fun(r,k,c')])
 and close_e (bij:var -> int) (n:int) (e:e) (p:v) : (var * e) list * e =
   match e with
   | Val v -> ([], close_v bij n v p)
@@ -87,7 +87,7 @@ and close_c (bij:var -> int) (n:int) (c:c) (p:v) : c =
     and p' = fresh "p'" in
     let c'' = close_c bij n c' (Var p') in
     let c'' = Let(p', Tuple(List.map (fun x -> Var x) xs), c'') in
-    let c'' = Let(List.nth xs (bij x), Val (Var y), c'') in
+    let c'' = Let(List.nth xs ((bij x) - 1), Val (Var y), c'') in
     let c'' = expand_xi xs 0 (gindex p) c'' in
     let c'' = Let(y, e', c'') in
     let rec helper lets c =
@@ -157,4 +157,4 @@ let close c =
     if n <= 0 then [] else Halt :: helper (n-1) in
   let p = fresh "p" in
   let c' = close_c bij n c (Var p) in
-  Let(p, Tuple(helper n), c;)
+  Let(p, Tuple(helper n), c')
