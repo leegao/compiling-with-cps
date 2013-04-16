@@ -152,6 +152,12 @@ and lower_c c : Il1.c =
     let (l1,y) = lower_v v1 in
     let (l2,z) = lower_v v2 in
     expand l0 (expand l1 (expand l2 (Il1.Call(Il1.Var x, Il1.Var y, Il1.Var z))))
+
+let rec lower_defs defs =
+  match defs with
+  | (x,Il1.Lam(y,c))::tl -> 
+    (x,Il1.Lam(y,lower_c c))::lower_defs tl
+  
 (* Implement this! *)
 let translate(e: exp): tprog =
   let c = translate1 e Il1.Halt in
