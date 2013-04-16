@@ -106,4 +106,14 @@ and close_c (bij:var -> int) (n:int) (c:c) (p:v) : c =
     let c' = Let(f, Index(2,Var fn), c') in
     let c' = Let(p', Index(1,Var fn), c') in
     Let(fn, close_v bij n v0 p, c')
+  | Call(v0,v1,v2) ->
+    let fn = fresh "fn" and p' = fresh "p'" and f = fresh "f" and v' = fresh "v'"
+    and arg = fresh "arg" and k = fresh "k" in
+    let c' = Call(Var f, Var arg, Var k) in
+    let c' = Let(k, close_v bij n v2 p, c') in
+    let c' = Let(arg, Tuple([Var p'; Var v']), c') in
+    let c' = Let(v', close_v bij n v1 p, c') in
+    let c' = Let(f, Index(2,Var fn), c') in
+    let c' = Let(p', Index(1,Var fn), c') in
+    Let(fn, close_v bij n v0 p, c')
 	
