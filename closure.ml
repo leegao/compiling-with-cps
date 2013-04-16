@@ -150,3 +150,11 @@ let build_bij c =
     | [] ->
       failwith "not found" in
   (helper 1 vs, List.length vs)
+
+let close c =
+  let (bij,n) = build_bij c in
+  let rec helper n =
+    if n <= 0 then [] else Halt :: helper (n-1) in
+  let p = fresh "p" in
+  let c' = close_c bij n c (Var p) in
+  Let(p, Tuple(helper n), c;)
