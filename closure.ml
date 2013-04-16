@@ -60,8 +60,6 @@ let rec close_v (bij:var -> int) (n:int) (v:v) (p:v) : e =
 	let c' = Let(y, Index(2,Var r), c') in
 	let c' = Let(p', Index(1,Var r), c') in
 	Tuple([p; Fun(r,k,c')])
-and close_c (bij:var -> int) (n:int) (c:c) (p:v) : c =
-  failwith "implement me!"
 and close_e (bij:var -> int) (n:int) (e:e) (p:v) : (var * e) list * e =
   match e with
   | Val v -> ([], close_v bij n v p)
@@ -81,4 +79,13 @@ and close_e (bij:var -> int) (n:int) (e:e) (p:v) : (var * e) list * e =
   | Index(i,v) ->
     let x = fresh "x" in
     ([x,close_v bij n v p], Index(i, Var x))
+and close_c (bij:var -> int) (n:int) (c:c) (p:v) : c =
+  match c with
+  | Let(x,e,c') ->
+    let (lets, e') = close_e bij n e p in
+    let ys = make_fresh "y" (List.length lets) and y = fresh "y" and xs = make_fresh "x" n
+    and p' = fresh "p'" in
+    let c'' = close_c bij n c' (Var p') in
+    let c'' = Let(p', Tuple(List.map (fun x -> Var x) xs), c'') in
+    failwith "NO"
 	
