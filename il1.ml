@@ -5,7 +5,7 @@ open Format
 let pp = print_string
 
 type var = string
-type v = Int of int | Var of var | Fun of var * var * c | Halt | Lam of var * c | TLam of var list * c
+type v = Int of int | Var of var | Fun of var * var * c | Halt | Lam of var * c
 and  e = Val of v | Plus of v * v | Tuple of v list | Index of int * v
 and  c = Let of var * e * c | Call of v * v * v | App of v * v
 and  def = var * v

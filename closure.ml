@@ -130,6 +130,8 @@ and vs_e (e:e) : VarSet.t =
   match e with
   | Val v -> vs_v v
   | Plus(v1,v2) -> VarSet.union (vs_v v1) (vs_v v2)
+  | Tuple(vs) ->
+    List.fold_left (fun a v -> VarSet.union a (vs_v v)) VarSet.empty vs
 and vs_v (v:v) : VarSet.t =
   match v with
   | Var x -> VarSet.singleton x
