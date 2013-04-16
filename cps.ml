@@ -76,7 +76,7 @@ and hoist_e (e:Il1.e) : Il1.e * Il1.def list =
         let (v0,def0) = hoist_v v in 
         ((v0)::(vs), (def0)@(defs))
     ) ([],[]) vs in
-    (Il1.Tuple (List.rev vs'), defs)
+    (Il1.Tuple (List.rev vs'), (List.rev defs))
   | Il1.Index(n,v) ->
     let (v',l) = hoist_v v in
     (Il1.Index(n,v'), l)

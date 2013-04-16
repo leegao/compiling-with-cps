@@ -33,7 +33,9 @@ let rec close_v (bij:var -> int) (n:int) (v:v) (p:v) : e =
   match v with
   | Int n -> Val v
   | Var x -> Index(bij x,p)
-  | Halt -> Val v
+  | Halt -> 
+    (* Halt is a fuction! *)
+    Tuple([p; Halt])
   | Lam(x,c) -> 
     let k = bij x in
     let r = fresh "r" in
