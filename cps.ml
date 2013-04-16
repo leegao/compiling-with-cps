@@ -195,6 +195,17 @@ and tc c : tcom =
   | Il1.Call(v0,v1,v2) ->
     TApp([tv v0; tv v1; tv v2])
     
+let rec translate_to_IL2 defs cc : tprog = 
+  match defs with
+  | (x,Il1.Lam(y,c))::tl -> 
+    TPLet(x, [y], tc c, translate_to_IL2 tl cc)
+  | (x,Il1.Fun(y,k,c))::tl ->
+    TPLet(x, [y;k], tc c, translate_to_IL2 tl cc)
+  | [] ->
+    TCom cc
+  | _ ->
+    failwith "fail at translation to IL2"
+    
 (* Implement this! *)
 let translate(e: exp): tprog =
   let c = translate1 e Il1.Halt in
@@ -205,7 +216,6 @@ let translate(e: exp): tprog =
   Il1.pp "\n";
   Il1.print_c c''' 0;
   Il1.pp "\n";
-  match e with
-    _ -> raise (Fail "Implement me!")
+  translate_to_IL2 defs' (tc c''')
 
 
