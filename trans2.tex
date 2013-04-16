@@ -133,4 +133,20 @@ We want to define a set of ``lowering'' translation $\trans{LV}{v}, \trans{LE}{e
 \trans{LE}{e} &: (\g{var} \times e) \g{list} \times \g{e} \\
 \trans{LC}{c} &: c
 \end{align*}
+We will use the notation
+$$
+\Let{x_i = e_i}{x}
+$$
+to mean
+$$
+([(x_i,e_i); \cdots (x_n,e_n)],x)
+$$
+and respective syntax sugary for expressions.
+
+\section{Values}
+\begin{align*}
+\trans{LV}{n} &= \Let{x = n}{x} \\
+\trans{LV}{x} &= ([], x) \\
+\trans{LV}{\g{halt}} &= \Let{x = \g{halt}}{x}
+\end{align*}
 \end{document}
