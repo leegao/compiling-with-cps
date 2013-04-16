@@ -120,7 +120,7 @@ e &::= v \mid v_0 + v_1 \mid (v_0,\cdots, v_n) \mid \pi_n v \\
 c &::= \Let{x = e}{c} \mid v_0~v_1~v_2 \mid v_0 ~ v_1
 \end{align*}
 
-we want to ``lift'' numbers and halt into expressions (as Val used in bindings only) and leave only variables as values, so in effect our language will now look like
+we want to ``lower'' numbers and halt into expressions (as Val used in bindings only) and leave only variables as values, so in effect our language will now look like
 \begin{align*}
 v &::= x \\
 e &::= v \mid \g{val}(n) \mid \g{val}(\g{halt}) v_0 + v_1 \mid (v_0,\cdots, v_n) \mid \pi_n v \\
@@ -156,5 +156,12 @@ Notice immediately that we only ever translate $e$ in the context of let express
 \trans{LE}{v_0 + v_1} &= \Let{(l_0, x_0) = \trans{LV}{v_0}}{\Let{(l_1,x_1) = \trans{LV}{v_1}}{(l_0 \cup l_1, x_0 + x_1)}} \\
 \trans{LE}{(v_0, \cdots, v_n)} &= \Let{(l_0, x_0) = \trans{LV}{v_0}}{\cdots\Let{(l_n,x_n) = \trans{LV}{v_n}}{(\bigcup l_k, (x_1,\cdots, x_n))}} \\
 \trans{LE}{\pi_n v} &= \Let{(l,x) = \trans{LV}{v}}{(l, \pi_n x)}
+\end{align*}
+
+\section{Commands}
+\begin{align*}
+\trans{LC}{\Let{x = e}{c}} &= \Let{(x_i = e_i, e') = \trans{LE}{e}}{\underbrace{\Let{x_i = e_i,x = e'}{\trans{LC}{c}}}_{\mbox{this is the actual command returned}}} \\
+\trans{LC}{v_0~v_1} &= \Let{(x_i = e_i, x) = \trans{LV}{v_0}, (y_j = e'_j, y) = \trans{LV}{v_1}}{~~~~\Let{x_i = e_i,y_j = e'_j}{x ~ y}} 
+\intertext{and without loss of generality, the same applies to the 3 argument case.}
 \end{align*}
 \end{document}
