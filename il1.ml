@@ -62,6 +62,9 @@ and print_e (e:e) (i:int) : unit =
     pp "[";
     helper vs;
     pp "]"
+  | Index(n,v) ->
+    pp ("#"^(string_of_int n));
+    print_v v i
 and print_v (v:v) (i:int): unit =
   match v with
   | Var x -> pp ("."^x)
@@ -105,6 +108,10 @@ and fvs_e (e:e) : VarSet.t =
   match e with
   | Val v -> fvs_v v
   | Plus(v1,v2) -> VarSet.union (fvs_v v1) (fvs_v v2)
+  | Tuple(vs) ->
+    List.fold_left (fun a v -> VarSet.union a (fvs_v v)) VarSet.empty vs
+  | Index(n,v) ->
+    fvs_v v
 and fvs_v (v:v) : VarSet.t =
   match v with
   | Var x -> VarSet.singleton x
