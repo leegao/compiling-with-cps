@@ -163,14 +163,27 @@ let rec lower_defs defs =
     []
   | _ ->
     failwith "fail at lower_defs"
+
+let rec tv v : var =
+  match v with
+  | Il1.Var x ->
+    x
+  | _ ->
+    failwith "fail at translating var"
+and te e : texp =
+  match e with
+  | Il1.Val v ->
+    TVar (tv v)
+    
 (* Implement this! *)
 let translate(e: exp): tprog =
   let c = translate1 e Il1.Halt in
   let c' = Closure.close c in
   let (c'', defs) = hoist_c c' in
+  let c''' = lower_c c'' and defs' = lower_defs defs in
   Il1.print_c c 0;
   Il1.pp "\n";
-  Il1.print_c c'' 0;
+  Il1.print_c c''' 0;
   Il1.pp "\n";
   match e with
     _ -> raise (Fail "Implement me!")
