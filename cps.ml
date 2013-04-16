@@ -184,6 +184,16 @@ and te e : texp =
     TTuple(List.map (fun v -> tv v) vs)
   | Il1.Index(n,v) ->
     TIndex(n, tv v)
+  | Il1.Val _ ->
+    failwith "fail at translating expression values"
+and tc c : tcom =
+  match c with
+  | Il1.Let(x,e,c) ->
+    TCLet(x, te e, tc c)
+  | Il1.App(v0,v1) ->
+    TApp([tv v0; tv v1;])
+  | Il1.Call(v0,v1,v2) ->
+    TApp([tv v0; tv v1; tv v2])
     
 (* Implement this! *)
 let translate(e: exp): tprog =
