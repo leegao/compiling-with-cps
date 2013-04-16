@@ -147,7 +147,11 @@ and lower_c c : Il1.c =
     let (l0,x) = lower_v v0 in
     let (l1,y) = lower_v v1 in
     expand l0 (expand l1 (Il1.App(Il1.Var x, Il1.Var y)))
-  
+  | Il1.Call(v0,v1,v2) ->
+    let (l0,x) = lower_v v0 in
+    let (l1,y) = lower_v v1 in
+    let (l2,z) = lower_v v2 in
+    expand l0 (expand l1 (expand l2 (Il1.Call(Il1.Var x, Il1.Var y, Il1.Var z))))
 (* Implement this! *)
 let translate(e: exp): tprog =
   let c = translate1 e Il1.Halt in
