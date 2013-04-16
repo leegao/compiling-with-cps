@@ -140,3 +140,13 @@ and vs_v (v:v) : VarSet.t =
   | Lam(x,c) -> VarSet.union (vs_c c) (VarSet.singleton x)
   | Fun(x,k,c) -> VarSet.union (VarSet.union (vs_c c) (VarSet.singleton x)) (VarSet.singleton k)
   | _ -> VarSet.empty
+
+let build_bij c =
+  let vs = VarSet.elements (vs_c c) in
+  let rec helper n vs x =
+    match vs with
+    | y::tl ->
+      if x = y then n else helper (n+1) tl x
+    | [] ->
+      failwith "not found" in
+  (helper 1 vs, List.length vs)
