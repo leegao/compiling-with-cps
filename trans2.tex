@@ -127,5 +127,10 @@ e &::= v \mid \g{val}(n) \mid \g{val}(\g{halt}) v_0 + v_1 \mid (v_0,\cdots, v_n)
 c &::= \Let{x = e}{c} \mid v_0~v_1~v_2 \mid v_0 ~ v_1
 \end{align*}
 
-We want to define a set of ``lowering'' translation $\trans{LV}{v}, \trans{LE}{e}, \trans{LC}{c}$ with
+We want to define a set of ``lowering'' translation $\trans{LV}{v}, \trans{LE}{e}, \trans{LC}{c}$ that binds all non-variable values (integers and halts) into their own variables. Therefore, we need to have both the value and the expressions translation be able to be abstracted as bindings.
+\begin{align*}
+\trans{LV}{v} &: (\g{var} \times e) \g{list} \times \g{var} \\
+\trans{LE}{e} &: (\g{var} \times e) \g{list} \times \g{e} \\
+\trans{LC}{c} &: c
+\end{align*}
 \end{document}
