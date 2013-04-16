@@ -29,13 +29,13 @@ let rec print_c (c:c) (i:int): unit =
     print_c c' (i+2);
     pp "\n"
   | App(v1,v2) ->
-    pp "(";
+    pp "app(";
     print_v v1 i;
     pp ")(";
     print_v v2 i;
     pp ")"
   | Call(v1,v2,v3) ->
-    pp "(";
+    pp "call(";
     print_v v1 i;
     pp ")(";
     print_v v2 i;
@@ -67,7 +67,7 @@ and print_e (e:e) (i:int) : unit =
     print_v v i
 and print_v (v:v) (i:int): unit =
   match v with
-  | Var x -> pp ("."^x)
+  | Var x -> pp (""^x)
   | Int n -> pp (string_of_int n)
   | Halt  -> pp "halt"
   | Lam(x,c) -> 

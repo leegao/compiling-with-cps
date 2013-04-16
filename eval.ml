@@ -55,9 +55,11 @@ let rec evalCom fncontext (context:(var * tval) list) com =
     match formals,args with
       [],[] -> []
     | x::formals',e::args'->
-	let v = evalVar fncontext context e in
-	(x,v)::(buildContext formals' args')
-    | _ -> raise (EvalError("Incorrect number of args for fn"))
+	    let v = evalVar fncontext context e in
+	    (x,v)::(buildContext formals' args')
+    | _ -> 
+      Pprint.pp (String.concat "," formals);
+      raise (EvalError("Incorrect number of args for fn"))
   in
   match com with
     TCLet(x, e, com') -> 
@@ -66,13 +68,15 @@ let rec evalCom fncontext (context:(var * tval) list) com =
   | TApp(f :: args) -> 
       let fn = evalVar fncontext context f in
       (match fn with 
-	TVFn(formals, body, fncontextlex) -> 
-	  let newcontext:(var * tval)list = buildContext formals args in
-	  evalCom fncontextlex newcontext body
-      | TVHalt -> 
-	  raise (EvalHalt(evalVar fncontext context (List.nth args 0)))
-      | _ -> raise (EvalError("Application to non function")))
-  | TApp([]) -> raise (EvalError("Empty app"))
+      | TVFn(formals, body, fncontextlex) -> 
+        Pprint.pp (String.concat "," formals);
+        Pprint.pp "\n";
+        let newcontext:(var * tval)list = buildContext formals args in
+        evalCom fncontextlex newcontext body
+          | TVHalt -> 
+        raise (EvalHalt(evalVar fncontext context (List.nth args 0)))
+          | _ -> raise (EvalError("Application to non function")))
+      | TApp([]) -> raise (EvalError("Empty app"))
 	
 	    
 let eval p = 

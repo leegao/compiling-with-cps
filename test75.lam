@@ -1,4 +1,3 @@
 let f = fun k -> (k 1) in 
-let r = cwcc f in
-r
+cwcc f
 

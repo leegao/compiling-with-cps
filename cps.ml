@@ -23,6 +23,7 @@ let rec translate1 (e:exp) (k:Il1.v): Il1.c =
       ))
     )
   | Let(x,e1,e2) ->
+    let v = fresh "v" in
     translate1 e1 (Il1.Lam(x, translate1 e2 k))
   | Plus(e1,e2) ->
     let n1 = fresh "n" and n2 = fresh "m" and z = fresh "z" in
@@ -41,6 +42,10 @@ let rec translate1 (e:exp) (k:Il1.v): Il1.c =
     let t = fresh "t" in
     let y = fresh "y" in
     translate1 e' (Il1.Lam(t, Il1.Let(y, Il1.Index(n,Il1.Var t), Il1.App(k, Il1.Var y))))
+  | Cwcc(e) ->
+    let f' = fresh "f'" in
+    let k' = fresh "k" in
+    translate1 e (Il1.Lam(f', Il1.Let(k', Il1.Val k, Il1.Call(Il1.Var f', Il1.Var k', Il1.Var k'))))
 (* 
   Lambda Hoisting without closure conversion
     The point is to lift all lambdas
@@ -222,10 +227,8 @@ let translate(e: exp): tprog =
   let c' = Closure.close c in
   let (c'', defs) = hoist_c c' in
   let c''' = lower_c c'' and defs' = lower_defs defs in
-  (*Il1.print_c c 0;
+  Il1.print_c c 0;
   Il1.pp "\n";
-  Il1.print_c c''' 0;
-  Il1.pp "\n";*)
   translate_to_IL2 defs' (tc c''')
 
 
