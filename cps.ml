@@ -128,6 +128,9 @@ and lower_e e : (var * Il1.e) list * Il1.e =
         ([], []) in
     let (l,tup) = helper vs in
     (l, Il1.Tuple tup)
+  | Il1.Index(n,v) ->
+    let (l,x) = lower_v v in
+    (l, Il1.Index(n, Il1.Var x))
   
 (* Implement this! *)
 let translate(e: exp): tprog =
