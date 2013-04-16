@@ -103,6 +103,13 @@ and hoist_v (v:Il1.v) : Il1.v * Il1.def list =
     let l' = ((f, Il1.Fun(x,k,c')))::l in
     (Il1.Var f, l')
 
+let rec expand (l: (var * Il1.e) list) c : Il1.c = 
+  match l with
+  | (x,e)::tl ->
+    Il1.Let(x,e,expand tl c)
+  | [] ->
+    c
+    
 let rec lower_v (v:Il1.v) : (var * Il1.e) list * var =
   match v with
   | Il1.Var x ->
@@ -131,6 +138,11 @@ and lower_e e : (var * Il1.e) list * Il1.e =
   | Il1.Index(n,v) ->
     let (l,x) = lower_v v in
     (l, Il1.Index(n, Il1.Var x))
+and lower_c c : Il1.c =
+  match c with 
+  | Il1.Let(x,e,c) ->
+    let (l,e') = lower_e e in
+    expand l (Il1.Let(x,e', lower_c c))
   
 (* Implement this! *)
 let translate(e: exp): tprog =
