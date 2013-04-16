@@ -157,7 +157,8 @@ let rec lower_defs defs =
   match defs with
   | (x,Il1.Lam(y,c))::tl -> 
     (x,Il1.Lam(y,lower_c c))::lower_defs tl
-  
+  | (x,Il1.Fun(y,k,c))::tl ->
+    (x,Il1.Fun(y,k,lower_c c))::lower_defs tl
 (* Implement this! *)
 let translate(e: exp): tprog =
   let c = translate1 e Il1.Halt in
