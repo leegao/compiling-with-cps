@@ -35,7 +35,8 @@ let rec close_v (bij:var -> int) (n:int) (v:v) (p:v) : e =
   | Var x -> Index(bij x,p)
   | Halt -> 
     (* Halt is a fuction! *)
-    Tuple([p; Halt])
+	let x = fresh "x" and k' = fresh "k'" in
+    Tuple([p; Fun(x,k',Let(k',Index(2,Var x), Call(Halt, Var k', Var k')))])
   (*| Lam(x,c) -> 
     let k = bij x in
     let r = fresh "r" in

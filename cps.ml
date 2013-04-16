@@ -6,6 +6,8 @@ exception Fail of string
 
 let fresh = Closure.fresh
 
+(* this is the "continuation" slot in continuations.
+   obviously not going to be used *)
 let kdummy = fresh "kdummy"
 
 let rec translate1 (e:exp) (k:Il1.v): Il1.c =
@@ -227,8 +229,6 @@ let translate(e: exp): tprog =
   let c' = Closure.close c in
   let (c'', defs) = hoist_c c' in
   let c''' = lower_c c'' and defs' = lower_defs defs in
-  Il1.print_c c 0;
-  Il1.pp "\n";
   translate_to_IL2 defs' (tc c''')
 
 

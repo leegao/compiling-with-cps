@@ -58,7 +58,6 @@ let rec evalCom fncontext (context:(var * tval) list) com =
 	    let v = evalVar fncontext context e in
 	    (x,v)::(buildContext formals' args')
     | _ -> 
-      Pprint.pp (String.concat "," formals);
       raise (EvalError("Incorrect number of args for fn"))
   in
   match com with
@@ -69,8 +68,6 @@ let rec evalCom fncontext (context:(var * tval) list) com =
       let fn = evalVar fncontext context f in
       (match fn with 
       | TVFn(formals, body, fncontextlex) -> 
-        Pprint.pp (String.concat "," formals);
-        Pprint.pp "\n";
         let newcontext:(var * tval)list = buildContext formals args in
         evalCom fncontextlex newcontext body
           | TVHalt -> 
