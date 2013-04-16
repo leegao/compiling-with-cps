@@ -116,4 +116,23 @@ and close_c (bij:var -> int) (n:int) (c:c) (p:v) : c =
     let c' = Let(f, Index(2,Var fn), c') in
     let c' = Let(p', Index(1,Var fn), c') in
     Let(fn, close_v bij n v0 p, c')
-	
+  
+(* calculate all variables of e *)
+let rec vs_c (c:c) : VarSet.t = 
+  match c with 
+  | Let(x,e',c') -> 
+    VarSet.union (VarSet.union (vs_e e') ((vs_c c'))) (VarSet.singleton x)
+  | App(v1,v2)  -> 
+    VarSet.union (vs_v v1) (vs_v v2)
+  | Call(v1,v2,v3) -> 
+    VarSet.union (VarSet.union (vs_v v1) (vs_v v2)) (vs_v v3)
+and vs_e (e:e) : VarSet.t =
+  match e with
+  | Val v -> vs_v v
+  | Plus(v1,v2) -> VarSet.union (vs_v v1) (vs_v v2)
+and vs_v (v:v) : VarSet.t =
+  match v with
+  | Var x -> VarSet.singleton x
+  | Lam(x,c) -> VarSet.union (vs_c c) (VarSet.singleton x)
+  | Fun(x,k,c) -> VarSet.union (VarSet.union (vs_c c) (VarSet.singleton x)) (VarSet.singleton k)
+  | _ -> VarSet.empty
