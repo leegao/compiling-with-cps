@@ -172,8 +172,18 @@ let rec tv v : var =
     failwith "fail at translating var"
 and te e : texp =
   match e with
-  | Il1.Val v ->
-    TVar (tv v)
+  | Il1.Val (Il1.Var x) ->
+    TVar x
+  | Il1.Val (Il1.Int n) ->
+    TNum n
+  | Il1.Val (Il1.Halt) ->
+    THalt
+  | Il1.Plus(v0,v1) ->
+    TPlus(tv v0, tv v1)
+  | Il1.Tuple(vs) ->
+    TTuple(List.map (fun v -> tv v) vs)
+  | Il1.Index(n,v) ->
+    TIndex(n, tv v)
     
 (* Implement this! *)
 let translate(e: exp): tprog =
