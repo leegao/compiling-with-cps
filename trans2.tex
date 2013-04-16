@@ -149,4 +149,12 @@ and respective syntax sugary for expressions.
 \trans{LV}{x} &= ([], x) \\
 \trans{LV}{\g{halt}} &= \Let{x = \g{halt}}{x}
 \end{align*}
+
+\section{Expressions}
+Notice immediately that we only ever translate $e$ in the context of let expressions, so we don't have to translate the case of just a value.
+\begin{align*}
+\trans{LE}{v_0 + v_1} &= \Let{(l_0, x_0) = \trans{LV}{v_0}}{\Let{(l_1,x_1) = \trans{LV}{v_1}}{(l_0 \cup l_1, x_0 + x_1)}} \\
+\trans{LE}{(v_0, \cdots, v_n)} &= \Let{(l_0, x_0) = \trans{LV}{v_0}}{\cdots\Let{(l_n,x_n) = \trans{LV}{v_n}}{(\bigcup l_k, (x_1,\cdots, x_n))}} \\
+\trans{LE}{\pi_n v} &= \Let{(l,x) = \trans{LV}{v}}{(l, \pi_n x)}
+\end{align*}
 \end{document}
