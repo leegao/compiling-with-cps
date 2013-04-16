@@ -7,45 +7,46 @@ exception Fail of string
 
 let fresh = Closure.fresh
 
+let kdummy = fresh "kdummy"
+
 let rec translate1 (e:exp) (k:Il1.v): Il1.c =
   match e with
-  | Var x -> Il1.App(k, Il1.Var x)
-  | Num n -> Il1.App(k, Il1.Int n)
+  | Var x -> Il1.Call(k, Il1.Var x, k)
+  | Num n -> Il1.Call(k, Il1.Int n, k)
   | Lambda (x, e') -> 
     let k' = fresh "k" in
-    Il1.App(k, Il1.Fun(x, k', translate1 e' (Il1.Var k')))
+    Il1.Call(k, Il1.Fun(x, k', translate1 e' (Il1.Var k')), k)
   | App(e1,e2) ->
     let f = fresh "f" in
     let v = fresh "v" in
     translate1 e1 (
-      Il1.Lam(f, translate1 e2 (
-        Il1.Lam(v, Il1.Call(Il1.Var f, Il1.Var v, k))
+      Il1.Fun(f,kdummy, translate1 e2 (
+        Il1.Fun(v,kdummy, Il1.Call(Il1.Var f, Il1.Var v, k))
       ))
     )
   | Let(x,e1,e2) ->
-    let v = fresh "v" in
-    translate1 e1 (Il1.Lam(x, translate1 e2 k))
+    translate1 e1 (Il1.Fun(x,kdummy, translate1 e2 k))
   | Plus(e1,e2) ->
     let n1 = fresh "n" and n2 = fresh "m" and z = fresh "z" in
-    translate1 e1 (Il1.Lam(n1, translate1 e2 (Il1.Lam(n2, Il1.Let(z, Il1.Plus(Il1.Var n1, Il1.Var n2), Il1.App(k, Il1.Var z))))))
+    translate1 e1 (Il1.Fun(n1,kdummy, translate1 e2 (Il1.Fun(n2,kdummy, Il1.Let(z, Il1.Plus(Il1.Var n1, Il1.Var n2), Il1.Call(k, Il1.Var z, k))))))
   | Tuple(lst) ->
     let rec helper l (tp:Il1.v list) : Il1.c =
       match l with
       | hd::tl ->
         let v = fresh "v" in
-        translate1 hd (Il1.Lam(v, helper tl ((Il1.Var v)::tp)))
+        translate1 hd (Il1.Fun(v,kdummy, helper tl ((Il1.Var v)::tp)))
       | [] ->
         let t = fresh "t" in
-        Il1.Let(t, Il1.Tuple (List.rev tp), Il1.App(k, Il1.Var t)) in
+        Il1.Let(t, Il1.Tuple (List.rev tp), Il1.Call(k, Il1.Var t, k)) in
     helper lst []
   | Index(n, e') -> 
     let t = fresh "t" in
     let y = fresh "y" in
-    translate1 e' (Il1.Lam(t, Il1.Let(y, Il1.Index(n,Il1.Var t), Il1.App(k, Il1.Var y))))
+    translate1 e' (Il1.Fun(t,kdummy, Il1.Let(y, Il1.Index(n,Il1.Var t), Il1.Call(k, Il1.Var y,k))))
   | Cwcc(e) ->
     let f' = fresh "f'" in
     let k' = fresh "k" in
-    translate1 e (Il1.Lam(f', Il1.Let(k', Il1.Val k, Il1.Call(Il1.Var f', Il1.Var k', Il1.Var k'))))
+    translate1 e (Il1.Fun(f',kdummy, Il1.Let(k', Il1.Val k, Il1.Call(Il1.Var f', Il1.Var k', Il1.Var k'))))
 (* 
   Lambda Hoisting without closure conversion
     The point is to lift all lambdas
