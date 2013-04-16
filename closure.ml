@@ -83,9 +83,18 @@ and close_c (bij:var -> int) (n:int) (c:c) (p:v) : c =
   match c with
   | Let(x,e,c') ->
     let (lets, e') = close_e bij n e p in
-    let ys = make_fresh "y" (List.length lets) and y = fresh "y" and xs = make_fresh "x" n
+    let y = fresh "y" and xs = make_fresh "x" n
     and p' = fresh "p'" in
     let c'' = close_c bij n c' (Var p') in
     let c'' = Let(p', Tuple(List.map (fun x -> Var x) xs), c'') in
-    failwith "NO"
+    let c'' = Let(List.nth xs (bij x), Val (Var y), c'') in
+    let c'' = expand_xi xs 0 (gindex p) c'' in
+    let c'' = Let(y, e', c'') in
+    let rec helper lets c =
+      match lets with
+      | (xi,ei)::tl -> 
+        Let(xi, ei, helper tl c)
+      | [] ->
+        c in
+    helper lets c''
 	
