@@ -159,6 +159,10 @@ let rec lower_defs defs =
     (x,Il1.Lam(y,lower_c c))::lower_defs tl
   | (x,Il1.Fun(y,k,c))::tl ->
     (x,Il1.Fun(y,k,lower_c c))::lower_defs tl
+  | [] ->
+    []
+  | _ ->
+    failwith "fail at lower_defs"
 (* Implement this! *)
 let translate(e: exp): tprog =
   let c = translate1 e Il1.Halt in
