@@ -110,6 +110,24 @@ let rec lower_v (v:Il1.v) : (var * Il1.e) list * var =
   | _ ->
     let x = fresh "n" in
     ([x,Il1.Val v], x)
+and lower_e e : (var * Il1.e) list * Il1.e =
+  match e with
+  | Il1.Val v ->
+    ([], e)
+  | Il1.Plus(v0,v1) ->
+    let (l0,x0) = lower_v v0 and (l1,x1) = lower_v v1 in
+    (l0@l1, Il1.Plus(Il1.Var x0, Il1.Var x1))
+  | Il1.Tuple(vs) ->
+    let rec helper vs =
+      match vs with
+      | v::tl ->
+        let (l,x) = lower_v v in
+        let (defs, tup) = helper tl in
+        (l@defs, (Il1.Var x)::tup)
+      | [] ->
+        ([], []) in
+    let (l,tup) = helper vs in
+    (l, Il1.Tuple tup)
   
 (* Implement this! *)
 let translate(e: exp): tprog =
