@@ -1,7 +1,6 @@
 (* A simple interpreter for the lambda calculus *)
 
 open Types
-open Optimize
 
 exception Fail of string
 
@@ -62,10 +61,10 @@ let rec hoist_c (c:Il1.c) : Il1.c * Il1.def list =
     let (v2', l2) = hoist_v v2 in
     let (v3', l3) = hoist_v v3 in
     (Il1.Call(v1',v2',v3'), l1@l2@l3)
-  | Il1.App(v1,v2) ->
+  (*| Il1.App(v1,v2) ->
     let (v1', l1) = hoist_v v1 in
     let (v2', l2) = hoist_v v2 in
-    (Il1.App(v1',v2'), l1@l2)
+    (Il1.App(v1',v2'), l1@l2)*)
 and hoist_e (e:Il1.e) : Il1.e * Il1.def list =
   match e with
   | Il1.Val v ->
@@ -104,13 +103,13 @@ and hoist_v (v:Il1.v) : Il1.v * Il1.def list =
     (v, [])
   | Il1.Halt ->
     (v, [])
-  | Il1.Lam(x,c) ->
+  (*| Il1.Lam(x,c) ->
     let (c', l) = hoist_c c in
     (* generate a new fresh name for this guy *)
     let f = fresh "fun" in
     (* replace this lambda by f (no capturing of variables) *)
     let l' = l @ [((f, Il1.Lam(x,c')))] in
-    (Il1.Var f, l')
+    (Il1.Var f, l')*)
   | Il1.Fun(x,k,c) ->
     let (c', l) = hoist_c c in
     (* generate a new fresh name for this guy *)
@@ -159,10 +158,10 @@ and lower_c c : Il1.c =
   | Il1.Let(x,e,c) ->
     let (l,e') = lower_e e in
     expand l (Il1.Let(x,e', lower_c c))
-  | Il1.App(v0,v1) ->
+  (*| Il1.App(v0,v1) ->
     let (l0,x) = lower_v v0 in
     let (l1,y) = lower_v v1 in
-    expand l0 (expand l1 (Il1.App(Il1.Var x, Il1.Var y)))
+    expand l0 (expand l1 (Il1.App(Il1.Var x, Il1.Var y)))*)
   | Il1.Call(v0,v1,v2) ->
     let (l0,x) = lower_v v0 in
     let (l1,y) = lower_v v1 in
@@ -171,8 +170,8 @@ and lower_c c : Il1.c =
 
 let rec lower_defs defs =
   match defs with
-  | (x,Il1.Lam(y,c))::tl -> 
-    (x,Il1.Lam(y,lower_c c))::lower_defs tl
+  (*| (x,Il1.Lam(y,c))::tl -> 
+    (x,Il1.Lam(y,lower_c c))::lower_defs tl*)
   | (x,Il1.Fun(y,k,c))::tl ->
     (x,Il1.Fun(y,k,lower_c c))::lower_defs tl
   | [] ->
@@ -206,15 +205,15 @@ and tc c : tcom =
   match c with
   | Il1.Let(x,e,c) ->
     TCLet(x, te e, tc c)
-  | Il1.App(v0,v1) ->
-    TApp([tv v0; tv v1;])
+  (*| Il1.App(v0,v1) ->
+    TApp([tv v0; tv v1;])*)
   | Il1.Call(v0,v1,v2) ->
     TApp([tv v0; tv v1; tv v2])
     
 let rec translate_to_IL2 defs cc : tprog = 
   match defs with
-  | (x,Il1.Lam(y,c))::tl -> 
-    TPLet(x, [y], tc c, translate_to_IL2 tl cc)
+  (*| (x,Il1.Lam(y,c))::tl -> 
+    TPLet(x, [y], tc c, translate_to_IL2 tl cc)*)
   | (x,Il1.Fun(y,k,c))::tl ->
     TPLet(x, [y;k], tc c, translate_to_IL2 tl cc)
   | [] ->

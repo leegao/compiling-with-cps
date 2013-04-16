@@ -36,7 +36,7 @@ let rec close_v (bij:var -> int) (n:int) (v:v) (p:v) : e =
   | Halt -> 
     (* Halt is a fuction! *)
     Tuple([p; Halt])
-  | Lam(x,c) -> 
+  (*| Lam(x,c) -> 
     let k = bij x in
     let r = fresh "r" in
     let p' = fresh "p'"  and y = fresh "y" and p'' = fresh "p''" in
@@ -47,7 +47,7 @@ let rec close_v (bij:var -> int) (n:int) (v:v) (p:v) : e =
     let c' = expand_xi xs 0 (gindex (Var p')) c' in
     let c' = Let(y, Index(2,Var r), c') in
     let c' = Let(p', Index(1,Var r), c') in
-	Tuple([p; Lam(r,c')])
+	Tuple([p; Lam(r,c')])*)
   | Fun(x,k,c) -> 
     let a = bij x in
     let b = bij k in
@@ -99,7 +99,7 @@ and close_c (bij:var -> int) (n:int) (c:c) (p:v) : c =
       | [] ->
         c in
     helper lets c''
-  | App(v0,v1) ->
+  (*| App(v0,v1) ->
     let fn = fresh "fn" and p' = fresh "p'" and f = fresh "f" and v' = fresh "v'"
     and arg = fresh "arg" in
     let c' = App(Var f, Var arg) in
@@ -107,7 +107,7 @@ and close_c (bij:var -> int) (n:int) (c:c) (p:v) : c =
     let c' = Let(v', close_v bij n v1 p, c') in
     let c' = Let(f, Index(2,Var fn), c') in
     let c' = Let(p', Index(1,Var fn), c') in
-    Let(fn, close_v bij n v0 p, c')
+    Let(fn, close_v bij n v0 p, c')*)
   | Call(v0,v1,v2) ->
     let fn = fresh "fn" and p' = fresh "p'" and f = fresh "f" and v' = fresh "v'"
     and arg = fresh "arg" and k = fresh "k" in
@@ -124,8 +124,8 @@ let rec vs_c (c:c) : VarSet.t =
   match c with 
   | Let(x,e',c') -> 
     VarSet.union (VarSet.union (vs_e e') ((vs_c c'))) (VarSet.singleton x)
-  | App(v1,v2)  -> 
-    VarSet.union (vs_v v1) (vs_v v2)
+  (*| App(v1,v2)  -> 
+    VarSet.union (vs_v v1) (vs_v v2)*)
   | Call(v1,v2,v3) -> 
     VarSet.union (VarSet.union (vs_v v1) (vs_v v2)) (vs_v v3)
 and vs_e (e:e) : VarSet.t =
@@ -139,7 +139,7 @@ and vs_e (e:e) : VarSet.t =
 and vs_v (v:v) : VarSet.t =
   match v with
   | Var x -> VarSet.singleton x
-  | Lam(x,c) -> VarSet.union (vs_c c) (VarSet.singleton x)
+  (*| Lam(x,c) -> VarSet.union (vs_c c) (VarSet.singleton x)*)
   | Fun(x,k,c) -> VarSet.union (VarSet.union (vs_c c) (VarSet.singleton x)) (VarSet.singleton k)
   | _ -> VarSet.empty
 

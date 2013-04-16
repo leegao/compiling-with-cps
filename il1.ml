@@ -5,9 +5,9 @@ open Format
 let pp = print_string
 
 type var = string
-type v = Int of int | Var of var | Fun of var * var * c | Halt | Lam of var * c
+type v = Int of int | Var of var | Fun of var * var * c | Halt
 and  e = Val of v | Plus of v * v | Tuple of v list | Index of int * v
-and  c = Let of var * e * c | Call of v * v * v | App of v * v
+and  c = Let of var * e * c | Call of v * v * v
 and  def = var * v
 
 let rec spaces i =
@@ -28,12 +28,12 @@ let rec print_c (c:c) (i:int): unit =
     pp (spaces (i+2));
     print_c c' (i+2);
     pp "\n"
-  | App(v1,v2) ->
+  (*| App(v1,v2) ->
     pp "app(";
     print_v v1 i;
     pp ")(";
     print_v v2 i;
-    pp ")"
+    pp ")"*)
   | Call(v1,v2,v3) ->
     pp "call(";
     print_v v1 i;
@@ -70,14 +70,14 @@ and print_v (v:v) (i:int): unit =
   | Var x -> pp (""^x)
   | Int n -> pp (string_of_int n)
   | Halt  -> pp "halt"
-  | Lam(x,c) -> 
+  (*| Lam(x,c) -> 
     pp "fun ";
     pp x;
     pp " -> \n";
     pp (spaces (i+2));
     print_c c (i+2);
     pp "\n";
-    pp (spaces i)
+    pp (spaces i)*)
   | Fun(x,k,c) ->
     pp "fun ";
     pp x;
@@ -100,8 +100,8 @@ let rec fvs_c (c:c) : VarSet.t =
   match c with 
   | Let(x,e',c') -> 
     VarSet.union (fvs_e e') (VarSet.remove x (fvs_c c'))
-  | App(v1,v2)  -> 
-    VarSet.union (fvs_v v1) (fvs_v v2)
+  (*| App(v1,v2)  -> 
+    VarSet.union (fvs_v v1) (fvs_v v2)*)
   | Call(v1,v2,v3) -> 
     VarSet.union (VarSet.union (fvs_v v1) (fvs_v v2)) (fvs_v v3)
 and fvs_e (e:e) : VarSet.t =
@@ -115,7 +115,7 @@ and fvs_e (e:e) : VarSet.t =
 and fvs_v (v:v) : VarSet.t =
   match v with
   | Var x -> VarSet.singleton x
-  | Lam(x,c) -> VarSet.remove x (fvs_c c)
+  (*| Lam(x,c) -> VarSet.remove x (fvs_c c)*)
   | Fun(x,k,c) -> VarSet.remove k (VarSet.remove x (fvs_c c))
   | _ -> VarSet.empty
 
@@ -138,8 +138,8 @@ let rec subst_c (v:v) (x:var) (c:c) : c =
       let c'' = subst_c (Var y') y c' in
       Let (y', subst_e v x e', subst_c v x c'')
     else Let(y, subst_e v x e', subst_c v x c')
-  | App(v1,v2) -> 
-    App(subst_v v x v1, subst_v v x v2)
+  (*| App(v1,v2) -> 
+    App(subst_v v x v1, subst_v v x v2)*)
   | Call(v1,v2,v3) -> 
     Call(subst_v v x v1, subst_v v x v2, subst_v v x v3)
 and subst_e (v:v) (x:var) (e:e) : e =
@@ -151,14 +151,14 @@ and subst_v (v':v) (x:var) (v:v) : v =
   | Var y -> if x = y then v' else v
   | Halt -> Halt
   | Int n -> Int n
-  | Lam(y,c) -> 
+  (*| Lam(y,c) -> 
     let xs = fvs_v v' in 
     if x = y then v 
     else if VarSet.mem y xs then 
       let y' = fresh y xs in 
       let c' = subst_c (Var y') y c in 
       Lam(y',subst_c v' x c')
-    else Lam(y,subst_c v' x c)
+    else Lam(y,subst_c v' x c)*)
   | Fun(y,k,c) ->
     (* y \ne k ever from program generation *)
     if y = k then
