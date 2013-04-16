@@ -70,13 +70,23 @@ and hoist_e (e:Il1.e) : Il1.e * Il1.def list =
     let (v2', l2) = hoist_v v2 in
     (Il1.Plus(v1',v2'), l1@l2)
   | Il1.Tuple (vs) ->
-    let (vs', defs) = List.fold_left (
+    let rec helper vs =
+      match vs with
+      | v::tl ->
+        let (vs',defs') = helper tl in
+        let (v', defs) = hoist_v v in
+        (v'::vs', defs@defs')
+      | _ ->
+        ([],[]) in
+    let (vs',defs) = helper vs in
+    (Il1.Tuple vs', defs)
+    (*let (vs', defs) = List.fold_left (
       fun a v -> 
         let (vs, defs) = a in
         let (v0,def0) = hoist_v v in 
         ((v0)::(vs), (def0)@(defs))
     ) ([],[]) vs in
-    (Il1.Tuple (List.rev vs'), (List.rev defs))
+    (Il1.Tuple (List.rev vs'), (List.rev defs))*)
   | Il1.Index(n,v) ->
     let (v',l) = hoist_v v in
     (Il1.Index(n,v'), l)
@@ -93,14 +103,14 @@ and hoist_v (v:Il1.v) : Il1.v * Il1.def list =
     (* generate a new fresh name for this guy *)
     let f = fresh "fun" in
     (* replace this lambda by f (no capturing of variables) *)
-    let l' = ((f, Il1.Lam(x,c')))::l in
+    let l' = l @ [((f, Il1.Lam(x,c')))] in
     (Il1.Var f, l')
   | Il1.Fun(x,k,c) ->
     let (c', l) = hoist_c c in
     (* generate a new fresh name for this guy *)
     let f = fresh "fun" in
     (* replace this lambda by f (no capturing of variables) *)
-    let l' = ((f, Il1.Fun(x,k,c')))::l in
+    let l' = l @ [((f, Il1.Fun(x,k,c')))] in
     (Il1.Var f, l')
 
 let rec expand (l: (var * Il1.e) list) c : Il1.c = 
@@ -212,10 +222,10 @@ let translate(e: exp): tprog =
   let c' = Closure.close c in
   let (c'', defs) = hoist_c c' in
   let c''' = lower_c c'' and defs' = lower_defs defs in
-  Il1.print_c c 0;
+  (*Il1.print_c c 0;
   Il1.pp "\n";
   Il1.print_c c''' 0;
-  Il1.pp "\n";
+  Il1.pp "\n";*)
   translate_to_IL2 defs' (tc c''')
 
 
