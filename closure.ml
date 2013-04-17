@@ -34,11 +34,16 @@ let rec close_v (g:var -> int) (v:v) (rhos:var list) : v =
   | Halt -> v
   | Fun(x,k,[],c) -> 
     let px = List.nth rhos ((g x)-1) in
-	let pk = List.nth rhos ((g k)-1) in
+    let pk = List.nth rhos ((g k)-1) in
     Fun(x,k,rhos, Let(px, Val (Var x), Let(pk, Val(Var k), close_c g c rhos)))
+  | _ -> failwith "fail at close_v"
 and close_e (g:var -> int) (e:e) (rhos:var list) : e =
   match e with
-  | _ -> failwith "close_e"
+  | Val v -> Val (close_v g v rhos)
+  | Plus(v0,v1) -> Plus(close_v g v0 rhos, close_v g v1 rhos) 
+  | Tuple(vs) ->
+    Tuple(List.map (fun v -> close_v g v rhos) vs)
+  | Index(n,v) -> Index(n, close_v g v rhos)
 and close_c (g:var -> int) (c:c) (rhos:var list) : c =
   match c with
   | _ -> failwith "close_c"
