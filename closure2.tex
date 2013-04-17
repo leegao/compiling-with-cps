@@ -113,5 +113,65 @@
 \maketitle
 \setlength{\parindent}{0pt}
 
+We want to translate from the nonclosed \f{il1} language
+\begin{align*}
+v &::= n \mid x \mid \lambda xk.c \mid \g{halt} \\
+e &::= v \mid v_0 + v_1 \mid (v_i) \mid \pi_n v \\
+c &::= \Let{x = e}{c} \mid v_0~v_1~v_2
+\end{align*}
+into the closed restriction with an explicit abstraction $\bar\rho \in \g{var}~\g{list}$ over all of the variables.
+\begin{align*}
+v &::= n \mid x \mid \lambda xk\bar\rho.c \mid \g{halt} \\
+e &::= v \mid v_0 + v_1 \mid (v_i) \mid \pi_n v \\
+c &::= \Let{x = e}{c} \mid v_0~v_1~v_2~\bar\rho
+\end{align*}
 
+Here, we can proceed as natural with the translation functions
+\begin{align*}
+\trans{V}{v} &: v \\
+\trans{E}{e} &: e \\
+\trans{C}{c} &: c 
+\end{align*}
+\section{Values}
+\begin{align*}
+\trans{V}{n} &= n \\
+\trans{V}{x} &= \rho_{\ba{x}} \\
+\trans{V}{\g{halt}} &= \g{halt} \\
+\trans{V}{\lambda xk.c} &= \lambda xk\bar\rho. \Let{\rho_{\ba{x}} = x, \rho_{\ba{k}} = k}{\trans{C}{c}}
+\end{align*}
+\section{Expressions}
+\begin{align*}
+\trans{E}{v} &= \trans{V}{v} \\
+\trans{E}{v_0 + v_1} &= \trans{V}{v_0} + \trans{V}{v_1} \\
+\trans{E}{(v_i)} &= (\trans{V}{v_i}) \\
+\trans{E}{\pi_n v} &= \pi_n \trans{V}{v}
+\end{align*}
+\section{Commands}
+\begin{align*}
+\trans{C}{v_0~v_1~v_2} &= \trans{V}{v_0} ~ \trans{V}{v_1} ~ \trans{V}{v_2} ~ \bar\rho \\
+\trans{C}{\Let{x = e}{c}} &= \Let{\rho_{\ba{x}} = \trans{E}{e}}{\trans{C}{c}}
+\end{align*}
+
+For example, suppose I have the command 
+$$
+c \triangleq \Let{f = \lambda xk. k~ (x + 1)~k}{f~4~\g{halt}}
+$$
+there are three variables here, $x,k,f$, so we can construct the injection:
+$$
+\ba{\cdot} = \Rec{x \mapsto 1, k \mapsto 2, f \mapsto 3}
+$$
+so
+$$
+\bar\rho = \rho_1, \rho_2, \rho_3
+$$
+then the above would translate into
+\begin{align*}
+\trans{C}{c} &= \Let{\rho_{\ba{f}} = \trans{E}{\lambda xk. k (x + 1)k}}{\trans{C}{f~4~\g{halt}}} \\
+\intertext{expand the $\mathcal{E}$ first}
+&= \Let{\rho_{\ba{f}} = \trans{V}{\lambda xk. k (x + 1)k}}{\trans{C}{f~4~\g{halt}}} \\
+&= \Let{\rho_{\ba{f}} = \lambda xk\rho_1\rho_2\rho_3.\Let{\rho_{\ba{x}} = x,\rho_{\ba{k}} = k}{\trans{C}{k~(x + 1)~k}}}{\trans{C}{f~4~\g{halt}}} \\
+\vdots \\
+&= \Let{\rho_{\ba{f}} = \lambda xk\rho_1\rho_2\rho_3.\Let{\rho_{\ba{x}} = x,\rho_{\ba{k}} = k}{\rho_{\ba{k}}(\rho_{\ba{x}} + 1)\rho_{\ba{k}}\rho_1\rho_2\rho_3}}{{\rho_{\ba{f}}~4~\g{halt}~\rho_1\rho_2\rho_3}} \\
+&=\Let{\rho_{3} = \lambda xk\rho_1\rho_2\rho_3.\Let{\rho_{1} = x,\rho_{2} = k}{\rho_{2}(\rho_{1} + 1)\rho_{\ba{k}}\rho_1\rho_2\rho_3}}{{\rho_{3}~4~\g{halt}~\rho_1\rho_2\rho_3}}
+\end{align*}
 \end{document}
