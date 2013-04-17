@@ -29,7 +29,13 @@ let gindex p n =
 
 let rec close_v (g:var -> int) (v:v) (rhos:var list) : v =
   match v with
-  | _ -> failwith "close_v"
+  | Int n -> v
+  | Var x -> Var (List.nth rhos ((g x)-1))
+  | Halt -> v
+  | Fun(x,k,[],c) -> 
+    let px = List.nth rhos ((g x)-1) in
+	let pk = List.nth rhos ((g k)-1) in
+    Fun(x,k,rhos, Let(px, Val (Var x), Let(pk, Val(Var k), close_c g c rhos)))
 and close_e (g:var -> int) (e:e) (rhos:var list) : e =
   match e with
   | _ -> failwith "close_e"
