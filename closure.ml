@@ -46,7 +46,12 @@ and close_e (g:var -> int) (e:e) (rhos:var list) : e =
   | Index(n,v) -> Index(n, close_v g v rhos)
 and close_c (g:var -> int) (c:c) (rhos:var list) : c =
   match c with
-  | _ -> failwith "close_c"
+  | Let(x,e,c) ->
+    let px = List.nth rhos ((g x)-1) in
+    Let(px, close_e g e rhos, close_c g c rhos)
+  | Call(v0,v1,v2,[]) ->
+    Call(close_v g v0 rhos, close_v g v1 rhos, close_v g v2 rhos, rhos)
+  | _ -> failwith "fail at close_c"
   
 (* calculate all variables of e (no including ps) *)
 let rec vs_c (c:c) : VarSet.t = 
