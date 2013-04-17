@@ -172,6 +172,6 @@ then the above would translate into
 &= \Let{\rho_{\ba{f}} = \lambda xk\rho_1\rho_2\rho_3.\Let{\rho_{\ba{x}} = x,\rho_{\ba{k}} = k}{\trans{C}{k~(x + 1)~k}}}{\trans{C}{f~4~\g{halt}}} \\
 \vdots \\
 &= \Let{\rho_{\ba{f}} = \lambda xk\rho_1\rho_2\rho_3.\Let{\rho_{\ba{x}} = x,\rho_{\ba{k}} = k}{\rho_{\ba{k}}(\rho_{\ba{x}} + 1)\rho_{\ba{k}}\rho_1\rho_2\rho_3}}{{\rho_{\ba{f}}~4~\g{halt}~\rho_1\rho_2\rho_3}} \\
-&=\Let{\rho_{3} = \lambda xk\rho_1\rho_2\rho_3.\Let{\rho_{1} = x,\rho_{2} = k}{\rho_{2}(\rho_{1} + 1)\rho_{\ba{k}}\rho_1\rho_2\rho_3}}{{\rho_{3}~4~\g{halt}~\rho_1\rho_2\rho_3}}
+&=\Let{\rho_{3} = \lambda xk\rho_1\rho_2\rho_3.\Let{\rho_{1} = x,\rho_{2} = k}{\rho_{2}(\rho_{1} + 1)\rho_{2}\rho_1\rho_2\rho_3}}{{\rho_{3}~4~\g{halt}~\rho_1\rho_2\rho_3}}
 \end{align*}
 \end{document}

@@ -5,9 +5,9 @@ open Format
 let pp = print_string
 
 type var = string
-type v = Int of int | Var of var | Fun of var * var * c | Halt
+type v = Int of int | Var of var | Fun of var * var * var list * c | Halt
 and  e = Val of v | Plus of v * v | Tuple of v list | Index of int * v
-and  c = Let of var * e * c | Call of v * v * v
+and  c = Let of var * e * c | Call of v * v * v * var list
 and  def = var * v
 
 let rec spaces i =
@@ -34,7 +34,7 @@ let rec print_c (c:c) (i:int): unit =
     pp ")(";
     print_v v2 i;
     pp ")"*)
-  | Call(v1,v2,v3) ->
+  | Call(v1,v2,v3,ps) ->
     pp "call(";
     print_v v1 i;
     pp ")(";
@@ -78,7 +78,7 @@ and print_v (v:v) (i:int): unit =
     print_c c (i+2);
     pp "\n";
     pp (spaces i)*)
-  | Fun(x,k,c) ->
+  | Fun(x,k,ps,c) ->
     pp "fun ";
     pp x;
     pp ",";
@@ -96,6 +96,7 @@ end)
 type varset = VarSet.t
 
 (* calculate free variables of e *)
+(*
 let rec fvs_c (c:c) : VarSet.t = 
   match c with 
   | Let(x,e',c') -> 
@@ -116,9 +117,10 @@ and fvs_v (v:v) : VarSet.t =
   match v with
   | Var x -> VarSet.singleton x
   (*| Lam(x,c) -> VarSet.remove x (fvs_c c)*)
-  | Fun(x,k,c) -> VarSet.remove k (VarSet.remove x (fvs_c c))
+  | Fun(x,k,ps,c) -> 
+    VarSet.remove k (VarSet.remove x (fvs_c c))
   | _ -> VarSet.empty
-
+*)
 (* generate a variable that is similar to x but fresh for vs *)
 let rec fresh (x:var) (vs:VarSet.t) : var = 
   let rec aux (x:var) (n:int) : var = 
@@ -127,7 +129,7 @@ let rec fresh (x:var) (vs:VarSet.t) : var =
       aux x (succ n) 
     else x_n in 
   aux x 0
-
+(*
 let rec subst_c (v:v) (x:var) (c:c) : c =
   match c with
   | Let(y,e',c') ->
@@ -173,7 +175,7 @@ and subst_v (v':v) (x:var) (v:v) : v =
         let c' = subst_c (Var k') k c' in
         Fun(y',k',subst_c v' x c')
       else Fun(y,k,subst_c v' x c)
-    
+*)
   
 
 
