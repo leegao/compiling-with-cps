@@ -6,7 +6,7 @@ let pp = print_string
 
 type var = string
 type v = Int of int | Var of var | Fun of var * var * var list * c | Halt
-and  e = Val of v | Plus of v * v | Tuple of v list | Index of int * v | Ifp v * v * v
+and  e = Val of v | Plus of v * v | Tuple of v list | Index of int * v | Ifp of v * v * v
 and  c = Let of var * e * c | Call of v * v * v * var list
 and  def = var * v
 

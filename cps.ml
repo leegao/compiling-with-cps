@@ -9,56 +9,49 @@ let fresh = Closure.fresh
 (* this is the "continuation" slot in continuations.
    obviously not going to be used *)
 let kdummy = fresh "kdummy"
-let kd' = fresh "kk"
+let kap = fresh "kappa"
 
-let rec translate1 (e:exp) (k:var): Il1.c =
-  let kd' = fresh "kk" in
-  let kd'' = fresh "kk" in
+let rec translate1 (e:exp) (k:Il1.v): Il1.c =
   match e with
-  | Var x -> Il1.Call(Il1.Var k, Il1.Var x, Il1.Var k, [])
-  | Num n -> Il1.Call(Il1.Var k, Il1.Int n, Il1.Var k, [])
-  | Lambda (x, e') -> 
-    let k' = fresh "k" in
-    Il1.Call(Il1.Var k, Il1.Fun(x, k', [], translate1 e' k'), Il1.Var k, [])
-  | App(e1,e2) ->
-    let f = fresh "f" in
-    let v = fresh "v" in
-    Il1.Let(kd',Il1.Val(
-      Il1.Fun(f,kdummy, [], 
-        Il1.Let(kd'', Il1.Val(
-          Il1.Fun(v,kdummy, [], Il1.Call(Il1.Var f, Il1.Var v, Il1.Var k, []))
-        ), translate1 e2 kd'')
-      )
-    ), translate1 e1 kd')
-  | Let(x,e1,e2) ->
-    Il1.Let(kd', Il1.Val(Il1.Fun(x,kdummy, [], translate1 e2 k)), translate1 e1 kd')
-  | Plus(e1,e2) ->
-    let n1 = fresh "n" and n2 = fresh "m" and z = fresh "z" in
-    Il1.Let(kd', Il1.Val(
-      Il1.Fun(n1,kdummy, [], 
-        Il1.Let(kd'', Il1.Val(Il1.Fun(n2,kdummy, [], Il1.Let(z, Il1.Plus(Il1.Var n1, Il1.Var n2), Il1.Call(Il1.Var k, Il1.Var z, Il1.Var k, [])))),
-        translate1 e2 kd'') )
-    ), translate1 e1 kd')
-  | Tuple(lst) ->
-    let rec helper l (tp:Il1.v list) : Il1.c =
-      match l with
-      | hd::tl ->
-        let v = fresh "v" in
-        Il1.Let(kd',Il1.Val(Il1.Fun(v,kdummy, [], helper tl ((Il1.Var v)::tp))),
-        translate1 hd kd')
+  | Num n -> Il1.Call(k, Il1.Int n, Il1.Halt, [])
+  | Var x -> Il1.Call(k, Il1.Var x, Il1.Halt, [])
+  | Lambda(x,e) -> let k' = fresh "k'" in
+    Il1.Call(k, (Il1.Fun(x,k',[], translate1 e (Il1.Var k'))), Il1.Halt, [])
+  | App(e0,e1) -> let v = fresh "v" and f = fresh "f" in
+    translate1 e0 (Il1.Fun(f,kap,[], translate1 e1 (Il1.Fun(v,kap,[], Il1.Call(Il1.Var f, Il1.Var v, k, [])))))
+  | Tuple(es) -> 
+    let rec helper es xs =
+      match es with
+      | e::tl ->
+        let x = fresh "x" in
+        translate1 e (Il1.Fun(x,kap,[], helper tl (Il1.Var x::xs)))
       | [] ->
-        let t = fresh "t" in
-        Il1.Let(t, Il1.Tuple (List.rev tp), Il1.Call(Il1.Var k, Il1.Var t, Il1.Var k, [])) in
-    helper lst []
-  | Index(n, e') -> 
-    let t = fresh "t" in
-    let y = fresh "y" in
-    Il1.Let(kd', Il1.Val(Il1.Fun(t,kdummy, [], Il1.Let(y, Il1.Index(n,Il1.Var t), Il1.Call(Il1.Var k, Il1.Var y,Il1.Var k, [])))),
-    translate1 e' kd')
+        let p = fresh "p" in
+        Il1.Let(p, Il1.Tuple(List.rev xs), Il1.Call(k, Il1.Var p, Il1.Halt, [])) in
+    helper es []
+  | Index(n,e) ->
+    let p = fresh "p" in
+    translate1 e (Il1.Fun(p,kap,[], Il1.Let(p, Il1.Index(n, Il1.Var p), Il1.Call(k, Il1.Var p, Il1.Halt, []))))
+  | Plus(e0,e1) ->
+    let x0 = fresh "x0" and x1 = fresh "x1" in
+    translate1 e0 (Il1.Fun(x0,kap,[], translate1 e1 (Il1.Fun(x1,kap,[], 
+      Il1.Let(x0, Il1.Plus(Il1.Var x0, Il1.Var x1), Il1.Call(k, Il1.Var x0, Il1.Halt, []))
+    ))))
+  | Let(x,e1,e2) ->
+    translate1 e1 (Il1.Fun(x,kap,[], translate1 e2 k))
+  | Ifp(e0,e1,e2) ->
+    let b = fresh "b" and v1 = fresh "v1" and v2 = fresh "v2" in
+    translate1 e0 (Il1.Fun(b,kap,[], translate1 e1 (Il1.Fun(v1,kap,[], translate1 e2 
+      (Il1.Fun(v2,kap,[], Il1.Let(b, Il1.Ifp(Il1.Var b, Il1.Var v1,Il1.Var v2), Il1.Call(k, Il1.Var b, Il1.Halt, []))))
+    ))))
   | Cwcc(e) ->
-    let f' = fresh "f'" in
-    Il1.Let(kd', Il1.Val(Il1.Fun(f',kdummy, [], (Il1.Call(Il1.Var f', Il1.Var k, Il1.Var k, [])))),
-    translate1 e kd')
+    let k' = fresh "k" and f = fresh "f" in
+    match k with
+    | Il1.Var k'' ->
+      let k' = k'' in
+      translate1 e (Il1.Fun(f,kap,[], Il1.Call(Il1.Var f, Il1.Var k', Il1.Var k', [])))
+    | _ ->
+      Il1.Let(k',Il1.Val k, translate1 e (Il1.Fun(f,kap,[], Il1.Call(Il1.Var f, Il1.Var k', Il1.Var k', []))))
 (* 
   Lambda Hoisting without closure conversion
     The point is to lift all lambdas
@@ -236,7 +229,8 @@ let rec translate_to_IL2 defs cc : tprog =
     
 (* Implement this! *)
 let translate(e: exp): tprog =
-  let c = Il1.Let(kd', Il1.Val (Il1.Halt), translate1 e kd') in
+  let kd' = fresh "k'" in
+  let c = (translate1 e Il1.Halt) in
   let c' = Closure.close c in
   let (c'', defs) = hoist_c c' in
   let c''' = lower_c c'' and defs' = lower_defs defs in
