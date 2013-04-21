@@ -1,0 +1,782 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fullpage}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amsthm}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+%\usepackage{bussproofs}
+\usepackage{enumitem}
+\usepackage{centernot}
+\usepackage{mathpartir}
+\usepackage{xspace}
+\usepackage{stmaryrd}
+\usepackage{mathtools}
+\usepackage{listings}
+\usepackage{tikz-qtree}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usetikzlibrary{automata,trees,fit,backgrounds,shapes,snakes}
+\usetikzlibrary{decorations.shapes}
+\usepackage{float}
+\author{Lee Gao (lg342)}
+\title{CS 6110 Homework 5}
+\date{\today}
+
+\definecolor{light-gray}{gray}{0.95}
+\newcommand {\conf} [1] {\ensuremath{\left\langle #1 \right\rangle}}
+\newcommand {\bstep} {\ensuremath{\Downarrow}}
+\newcommand {\bstepA} {\bstep_{ A}}
+\newcommand {\bstepB} {\bstep_{ B}}
+\newcommand {\bstepC} {\bstep_{ C}}
+%\newcommand {\co} [1] {\ensuremath{\operatorname{\bf #1}}}
+\newcommand {\coo} [1] {\ensuremath{\operatorname{\mathsf{#1}}}}
+\newcommand {\co} [1] {\coo{#1}}
+\newcommand {\pp}  {\ensuremath{\mbox{\footnotesize{++}}}}
+\newcommand {\Skip} {\co{skip}}
+\newcommand {\Not} {\co{not}}
+\newcommand {\If}[3] {\co{if} (#1) \co{then} #2 \co{else} #3}
+\newcommand {\Ifp}[3] {\co{ifp} (#1) \co{then} #2 \co{else} #3}
+\newcommand {\While}[2] {\co{while} #1 \co{do} #2}
+\newcommand {\Repeat}[2] {\co{repeat} #1 \co{do} #2}
+\newcommand {\Input} {\co{input}}
+\newcommand {\Break} {\co{break}}
+\newcommand {\Continue} {\co{continue}}
+\newcommand{\True}{\co{True}}
+\newcommand{\False}{\co{False}}
+\newcommand{\Or}{\co{or}}
+\newcommand{\Let}[1]{\coo{let} #1 \coo{in} }
+\newcommand{\Lam}{\ensuremath{{\lambda}}}
+\newcommand{\Ref}{\coo{ref}}
+\newcommand{\Int}{\coo{int}}
+\newcommand{\bool}{\coo{bool}}
+\newcommand{\Bool}{\bool}
+\newcommand{\Unit}{\coo{unit}}
+\newcommand{\Rec}[1]{\left\{#1\right\}}
+\newcommand{\pa}[1]{\left(#1\right)}
+\newcommand{\ba}[1]{\left\langle #1\right\rangle}
+\newcommand{\tree}{\coo{tree}}
+\newcommand{\fa}{\coo{\forall}}
+\newcommand{\more}[1]{\vdots\hspace{-1mm}~^{#1}}
+\newcommand{\f}[1]{\textsc{#1}}
+\newcommand{\g}[1]{\textsf{#1}}
+\newcommand{\finite}{\co{finite}}
+\newcommand{\lift}[1]{\left\lfloor #1 \right\rfloor}
+
+\newcommand{\trans}[2]{\ensuremath{\mathcal{#1}\llbracket #2\rrbracket}}
+
+\newtheorem*{lemma}{Lemma}
+\newtheorem*{theorem}{Theorem}
+\newtheorem*{definition}{Definition}
+
+\lstset{ %
+  language=Caml,                % the language of the code
+  basicstyle=\footnotesize,           % the size of the fonts that are used for the code
+  numbers=left,                   % where to put the line-numbers
+  numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
+  stepnumber=1,                   % the step between two line-numbers. If it's 1, each line 
+                                  % will be numbered
+  numbersep=10pt,                  % how far the line-numbers are from the code
+  backgroundcolor=\color{white},      % choose the background color. You must add \usepackage{color}
+  showspaces=false,               % show spaces adding particular underscores
+  showstringspaces=false,         % underline spaces within strings
+  showtabs=false,                 % show tabs within strings adding particular underscores
+  mathescape=true,
+  frame=leftline,                   % adds a frame around the code
+  rulecolor=\color{gray},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  tabsize=2,                      % sets default tabsize to 2 spaces
+  captionpos=t,                   % sets the caption-position to bottom
+  breaklines=true,                % sets automatic line breaking
+  breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+  title=\lstname,                   % show the filename of files included with \lstinputlisting;
+                                  % also try caption instead of title
+  escapeinside={\%*}{*)},            % if you want to add LaTeX within your code
+  morekeywords={*,...},              % if you want to add more keywords to the set
+  deletekeywords={...}              % if you want to delete keywords from the given language
+}
+
+\newcommand\tmark[2]{%
+  \ensuremath{\tikz[baseline] \node[anchor=base] (#1) {#2};}}
+\tikzstyle{every picture}+=[remember picture]
+\newcommand{\tm}[2]{\tmark{#1}{\ensuremath{#2}}}
+\newcommand{\tr}[2]{\tmark{#1}{\color{red}{\ensuremath{#2}}}}
+\newcommand{\arr}[1]{\begin{array}{cccccccccc} #1\end{array}}
+\newcommand{\mat}[1]{\left(\arr{#1}\right)}
+\newcommand{\Malloc}{\co{malloc}}
+\newcommand{\Null}{\co{null}}
+
+\allowdisplaybreaks
+
+\begin{document}
+\tikzset{every tree node/.style={minimum width=2em,draw,circle},
+         blank/.style={draw=none},
+         edge from parent/.style=
+         {draw, edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}},
+         level distance=1.5cm}
+\maketitle
+\setlength{\parindent}{0pt}
+
+\begin{enumerate}[label=\textbf{Excercise \arabic*\ }]
+\setcounter{enumi}{0}
+\item \textbf{Explicit Initialization}
+
+Compound data structures such as arrays, tuples, and records often need to be initialized step by step rather than being created all at once. Let us try to model safe, step-by-step initialization of tuples using an extension to the simply type $\lambda$:
+\begin{align*}
+e &::= x \mid e_1~e_2 \mid \lambda x:\tau.e \mid b \mid \Malloc \tau_1 \times \cdots \times \tau_n \mid \#n~e \mid \#n~e_1 := e_2 \\
+b &::= n \mid \True \mid \False \mid \Null \\
+\tau &::= B \mid \tau_1 \to \tau_2 \mid \tau_1 \times \cdots \times \tau_n \mid (\tau_1 \times \cdots \times \tau_n)\backslash\Rec{n_1 \cdots n_k} \\
+B &::= \g{int} \mid \g{bool} \mid 1 \\
+v &::= b \mid \lambda x:\tau.e \mid (v_1, \cdots, v_n)
+\end{align*}
+And also our source language does not include explicit typles, we augment the grammar in order to define the small-step semantics.
+$$
+e ::= \cdots \mid (v_1,\cdots,v_n)
+$$
+\begin{enumerate}
+\item Extend the definition of the evaluation context and small-step operational semantics of the simply-typed $\lambda$ to include the three new expressions: $\Malloc \tau_1 * \cdots * \tau_n, \#n~e,$ and $\#n~e_1:=e_2$.
+
+Let's start with the evaluation context.
+\begin{align*}
+E &::= [\cdot] \mid E~e_2 \mid v~E \\ &~~~~\mid \#n~E \mid \#n~E := e_2 \mid \#n~v := E
+\end{align*}
+so basically we want to reduce all projection arguments into values, and we want to reduce left to right for initializations.
+
+Next, let's consider the small step operational semantics. First, we know that we want $\Malloc$ to step into a tuple, so we add the rule
+$$
+\inferrule*[right=Malloc]{~}{\Malloc t_1 * \cdots * t_n \to (\Null, \cdots, \Null)}
+$$
+it might be a bit unsettling at this point to note that we're loosing all type information since tuples are untagged so one might wonder how it would be possible to prove soundness if one can't even prove that one of the intermediate steps of the reduction will have some certain type. Fear not, later on, preservation will save our ass.
+
+Next, let's consider projections.
+$$
+\inferrule*[right=Proj]{~}{\#k~(v_1,\cdots,v_k,\cdots,v_n) \to v_k}
+$$
+%with the implicit side condition that $v_k \in \Rec{v_1,\cdots,v_n}$ of course.
+
+Finally, let's consider initialization
+$$
+\inferrule*[right=Init]{~}{\#k~(v_1,\cdots,v_k,\cdots,v_n) := v_k' \to (v_1,\cdots,v_k',\cdots,v_n)}
+$$
+Here, one natural question arises as to whether we should enforce the restriction that in the $k^{th}$ initialization above, whether $v_k$ must be $\Null$ or not. From a soundness perspective this is unnecessary as we can eliminate such violations from the static semantics (we will later see that if we can typecheck this initialization, then we can find a derivation of $\Gamma \vdash v_k : 1$, which by some form of a normal-form lemma means that $v_k = \Null$, so if we start off with the static semantic anyways, this requirement will be redundant).
+
+\item Extend the static semantics for the new expressions.
+
+The easy case is just to extend the semantics for $\Malloc$.
+$$
+\inferrule*[right=TMalloc]{~}{\Gamma \vdash \Malloc \tau_1 * \cdots * \tau_n : (\tau_1 * \cdots * \tau_n)\backslash\Rec{1 \cdots n}}
+$$
+
+However, how do we typecheck tuples? Suppose we have a judgment of the form
+$$
+\Gamma \vdash (v_1,\cdots, v_n) : (\tau_1 * \cdots * \tau_n)\backslash\Rec{a_1,\cdots,a_k}
+$$
+we know that for each $j \notin (a_1,\cdots,a_k)$, we must be able to typecheck $v_j$ into type $\tau_j$. But what about the masked indices? Well, we need to have them be type $1$ to ensure that they have not been initialized yet, which gives the rule
+$$
+\inferrule*[right=TTuple]{\forall_{a_i}. \Gamma \vdash v_{a_i} : 1 \and 
+\forall_{j \ne a_i}. \Gamma \vdash v_j:\tau_j}{\Gamma \vdash (v_1,\cdots, v_n) : (\tau_1 * \cdots * \tau_n)\backslash\Rec{a_1,\cdots,a_k}}
+$$
+but this raises another interesting questions: what happened to the $\tau_{a_i}$? Well, we didn't need them because we know they are going to be masked, but this results in an interesting observation: the same set of premises could end up giving us multiple type derivations to choose from, so in a sense, typechecking isn't ``syntax-directed''.
+
+Next, let's consider projections.
+$$
+\inferrule*[right=TProj]{\Gamma \vdash e:(\tau_1*\cdots\tau_k\cdots*\tau_n)\backslash\Rec{a_1,\cdots,a_m} \and k \ne a_i}{\Gamma \vdash \#k~e:\tau_k}
+$$
+and initializations
+$$
+\inferrule*[right=TInit]{\Gamma \vdash e_1:(\tau_1*\cdots*\tau_n)\backslash\Rec{a_1,\dots,a_m,k} \and \Gamma \vdash e_2:\tau_k}{\Gamma \vdash \#k~e_1 := e_2 :  (\tau_1 * \cdots \tau_n)\backslash\Rec{a_1,\dots,a_m}}
+$$
+
+\item Now let us try to prove the soundness of the language:
+
+For the sake of clarity, let's write out our operational semantic, static semantics, and evaluation context in full as a recap.
+\begin{mathpar}
+\inferrule*[right=Context]{e \to e'}{E[e] \to E[e']} \and
+\inferrule*[right=$\beta$]{~}{(\lambda x:\tau.e) ~ v \to e\Rec{v/x}} \and
+\inferrule*[right=Malloc]{~}{\Malloc t_1 * \cdots * t_n \to (\Null, \cdots, \Null)} \and
+\inferrule*[right=Proj]{~}{\#k~(v_1,\cdots,v_k,\cdots,v_n) \to v_k} \and
+\inferrule*[right=Init]{~}{\#k~(v_1,\cdots,v_k,\cdots,v_n) := v_k' \to (v_1,\cdots,v_k',\cdots,v_n)}
+\end{mathpar}
+$$
+E ::= [\cdot] \mid E~e_2 \mid v~E \mid \#n~E \mid \#n~E := e_2 \mid \#n~v := E
+$$
+\begin{mathpar}
+\inferrule*[right=TVar]{~}{\Gamma,x:\tau \vdash x : \tau} \and
+\inferrule*[right=TInt]{~}{\Gamma \vdash n : \g{int}} \and
+\inferrule*[right=TTrue]{~}{\Gamma \vdash \True: \g{bool}} \and
+\inferrule*[right=TFalse]{~}{\Gamma \vdash \False: \g{bool}} \and
+\inferrule*[right=TApp]{\Gamma \vdash e_1 : \tau' \to \tau \and \Gamma \vdash e_2 : \tau'}{\Gamma \vdash e_1~e_2 : \tau} \and
+\inferrule*[right=TLam]{\Gamma,x:\tau' \vdash e:\tau}{\Gamma \vdash \lambda x:\tau'.e : \tau' \to \tau} \and
+\inferrule*[right=TNull]{~}{\Gamma \vdash \Null : 1} \and
+\inferrule*[right=TMalloc]{~}{\Gamma \vdash \Malloc \tau_1 * \cdots * \tau_n : (\tau_1 * \cdots * \tau_n)\backslash\Rec{1 \cdots n}} \and
+\inferrule*[right=TTuple]{\forall_{a_i}. \Gamma \vdash v_{a_i} : 1 \and 
+\forall_{j \ne a_i}. \Gamma \vdash v_j:\tau_j}{\Gamma \vdash (v_1,\cdots, v_n) : (\tau_1 * \cdots * \tau_n)\backslash\Rec{a_1,\cdots,a_k}} \and
+\inferrule*[right=TProj]{\Gamma \vdash e:(\tau_1*\cdots\tau_k\cdots*\tau_n)\backslash\Rec{a_1,\cdots,a_m} \and k \ne a_i}{\Gamma \vdash \#k~e:\tau_k} \and\\
+\inferrule*[right=TInit]{\Gamma \vdash e_1:(\tau_1*\cdots*\tau_n)\backslash\Rec{a_1,\dots,a_m,k} \and \Gamma \vdash e_2:\tau_k}{\Gamma \vdash \#k~e_1 := e_2 :  (\tau_1 * \cdots \tau_n)\backslash\Rec{a_1,\dots,a_m}}
+\end{mathpar}
+\begin{enumerate}
+\item Formulate and prove a preservation lemma for the language, which states that evaluation preserves the type of the expression.
+
+\begin{lemma}[Preservation]
+$$
+\vdash e : \tau \wedge e \to e' \implies \vdash e':\tau
+$$
+\begin{proof}
+Assuming that $\vdash e : \tau$ (because otherwise the lemma holds vacuously), we will show this by induction on the derivation of $e \to e'$\footnote{The lecture notes decided to induct over the derivation of the typechecking judgment $\vdash e:\tau$ instead, but this quickly becomes problematic in the \f{Context} case below when we attempt to show that $\vdash E[e]:\tau \implies \exists \tau'.\vdash e:\tau'$ such that $\vdash e:\tau'$ is furthermore a subderivation of $\vdash E[e]:\tau$ (in order to use the induction hypothesis $P(\vdash e : \tau)$). This is not true if $E = [\cdot]$, so we will need to resort to hacks such as normalizing proofs into cases where if the concluding rule is \f{Context}, it cannot use $E = [\cdot]$. It is much cleaner to just do induction over the derivation of the small step SOS.} with a case analysis on the last rule used in the derivation of $e \to e'$ using the immediate subderivation relation $\prec$ (which is well-founded as seen countless times before). Specifically, our induction hypothesis is
+$$
+P( e \to e') \triangleq \vdash e:\tau \implies  \vdash e':\tau
+$$
+\begin{description}
+\item[$\beta$] Here, we have $e = (\lambda x:\tau'.e_0)~v$ and $e' = e_0\Rec{v/x}$, and $ \vdash e : \tau$. By inspection, we find the following derivation of $ \vdash e: \tau$:
+$$
+\inferrule*[right=$\beta$]{\inferrule*[right=Lam]{x:\tau' \vdash e_0 : \tau}{\vdash \lambda x:\tau'.e_0 : \tau' \to \tau} \and \vdash v : \tau'}{ \vdash (\lambda x:\tau.e_0)~v : \tau}
+$$
+so that there must exist some derivation of both of the leaves of the above proof, so we have a derivation for $x:\tau' \vdash e_0 : \tau$ and $v:\tau'$.
+
+Now, we know that $e \to e_0\Rec{v/x}$, so by the substitution lemma, we can conclude that $\vdash e_0\Rec{v/x}:\tau$, which shows the case.
+
+\item[$\f{Malloc}$] Here, we have $e = \Malloc \tau_1 * \cdots * \tau_n$ and $e' = (\Null, \cdots, \Null)$. We get immediately that $\vdash e : (\tau_1 * \cdots * \tau_n)\backslash\Rec{1,\dots,n} = \tau$ We can immediately construct the derivation that
+$$
+\inferrule*[right=TTuple]{\vdash \Null : 1  \and \cdots \and \vdash \Null : 1}{\vdash e' : (\tau_1 * \cdots * \tau_n)\backslash\Rec{1,\dots,n}}
+$$
+which shows that $\vdash e' : \tau$ and shows the case.
+\item[Proj] Here, we have $e = \#k~(v_1,\cdots,v_n)$ and $e' = v_k$; furthermore, we have some derivation $\vdash e : \tau_k$, which, given any derivation concluding $\vdash e: \tau_k$, must look like
+$$
+\inferrule*[right=TProj]
+{
+	\inferrule*[right=TTuple]
+	{\cdots \and \overbrace{\vdash v_k : \tau_k}^{\g{because }k\ne a_i}}
+	{\vdash (v_1,\cdots,v_n) : (\tau_1 * \cdots * \tau_k * \cdots * \tau_n)\backslash \Rec{a_1,\dots,a_m} \and k \ne a_i}
+}
+{\vdash \#k (v_1,\cdots,v_n) : \tau_k}
+$$
+but then we have a derivation of $\vdash v_k : \tau_k$, which shows the case.
+\item[Init] Here, we have $e = \#k~(v_1,\cdots,v_n) := v_k'$ and $e' = (v_1,\cdots,v_k',\cdots, v_n)$; furthermore we have some derivation that $\vdash e:\tau$. Now, consider any derivation of $\vdash e: \tau$, it must be the case that its derivation must look like
+$$
+\inferrule*[right=TInit]
+{
+	\inferrule*[right=TTuple]{\forall_{a_i}. \vdash v_{a_i} : 1 \and \forall_{j \ne a_i, j\ne k}. \vdash v_j : \tau_j \and \cdots}{\vdash (v_1,\cdots, v_n):(\tau_1 \cdots \tau_n)\backslash\Rec{a_1,\dots,a_m,k}} 
+\and \vdash v_k' : \tau_k}
+{\vdash e : (\tau_1 \cdots \tau_n)\backslash\Rec{a_1,\dots,a_m}}
+$$
+where $k \ne a_i$. Now, using these facts immediately, we can construct another derivation that
+$$
+\inferrule*[right=TTuple]
+{\forall_{a_i}. \vdash v_{a_i} : 1 \and \forall_{j \ne a_i, j\ne k} \vdash v_j : \tau_j \and \vdash v_k' : \tau_k }
+{\vdash (v_1,\cdots,v_k',\cdots,v_n):(\tau_1 \cdots \tau_n)\backslash\Rec{a_1,\dots,a_m}}
+$$
+which concludes that $\vdash e':\tau$ and hence shows the case.
+\item[Context] Here, $e = E[e_0], e' = E[e_0']$ and we also get a derivation of $e_0 \to e_0'$ as well as $\vdash e : \tau$.
+
+In order to proceed any further, we need to do a second structural induction on evaluation context on the proposition $P'(E) \triangleq \vdash E[e_0] : \tau \implies \exists \tau'. \vdash e_0' : \tau'$, using the immediate subcontext relation $\prec'$ which is well-founded by construction. We need this proposition $P'$ in order to use our induction hypothesis $P$ (otherwise we cannot claim that $e'$ is well-formed). Let's do a case analysis on the struct of $E$.
+
+\begin{itemize}
+\item $E = [\cdot]$ -- Here, $E[e_0] = e_0$, so if we have $\vdash [e_0] : \tau$, then obviously we have $\vdash e_0 : \tau$, which shows the case.
+\item $E = E_1~e_2$ -- Here, $E[e_0] = E_1[e_0]~e_2$ and we also have $\vdash E_1[e_0] ~ e_2 : \tau$. The only derivations that concludes in this must be of the form
+$$
+\inferrule*[right=TApp]{\vdash E_1[e_0] : \tau' \to \tau \and \vdash e_2 : \tau'}{\vdash E_1[e_0]~e_2 : \tau}
+$$
+and by inversion, we get that $\vdash E_1[e_0] : \tau' \to \tau$. Now, since $E_1 \prec' E$, we can apply the induction hypothesis $P'(E_1)$ to get that $\vdash E_1[e_0] : \tau' \to \tau \implies \exists \tau''. \vdash e_0 : \tau''$, which shows the case. 
+\item $E = v~E_2$ -- Here, we have $\vdash v~E_2[e_0] : \tau$; the only derivation that concludes in this must be of the form
+$$
+\inferrule*[right=TApp]{\vdash v : \tau' \to \tau \and \vdash E_2[e_0] : \tau'}{\vdash v~E_2[e_0] : \tau}
+$$
+and we get a derivation of $\vdash E_2[e_0] : \tau'$. But $E_2 \prec' E$, so by the induction hypothesis $P'(E_2)$, we get that $\exists \tau''. \vdash e_0 : \tau''$, which shows the case.
+
+\item $E = \#k~E'$ -- Here, we get $\vdash \#k~E'[e_0] : \tau_k$, and the only rule that applies is
+$$
+\inferrule*[right=TProj]{\vdash E'[e_0] : \tau' \and \cdots}{\vdash \#k~E'[e_0] : \tau_k}
+$$
+for some $\tau'$ a masked tuple type. Now, since $E' \prec' E$, then from $P'(E')$, we know that $\exists \tau''. \vdash e_0 : \tau''$, which shows the case.
+
+\item $E = \#k~E_1 := e_2$ -- Here, we get $\vdash \#k~E_1[e_0] := e_2 : \tau$, and the only rule that applies is
+$$
+\inferrule*[right=TInit]{\vdash E_1[e_0] : \tau' \and \cdots }{\vdash \#k~E_1[e_0] := e_2 : \tau}
+$$
+so we get a  derivation of $\vdash E_1[e_0] : \tau'$ for some $\tau'$. Since $E_1 \prec' E$, then by IH $P'(E_1)$, we have that $\exists \tau''. \vdash e_0 : \tau''$ which shows the case.
+
+\item $E = \#~v := E_2$ -- Here, we get $\vdash \#k~v := E_2[e_0] : \tau$, and the only rule that applies is
+$$
+\inferrule*[right=TInit]{\cdots \and \vdash E_2[e_0] : \tau_k }{\vdash \#k~v := E_2[e_0] : \tau}
+$$
+so we get a derivation of $\vdash E_2[e_0] : \tau_k$ for some $\tau_k$. since $E_2 \prec' E$, then $P'(E_2)$ gives use $\exists \tau''.\vdash e_0 : \tau''$ which shows the case and concludes the proof that $\forall E. P'(E)$. \qedhere
+\end{itemize}
+
+From this, we can use $P'(E)$ for $e = E[e_0]$ and $\vdash E[e_0] : \tau$ to get that there exists some $\tau'$ such that $\vdash e_0 : \tau'$. Now, because $e_0 \to e_0' \prec E[e_0] \to E[e_0']$\footnote{It might be a bit confusing sometimes to make sense of how this works for the case $\inferrule{e \to e'}{[e] \to [e']}$, since it is in some semblance reflexive hence it appears to not be ``well-founded''; this just means that ordering by the conclusions isn't well-founded (i.e. if we use a $\prec$ relation on the conclusions of derivations rather than derivations themselves). But since all valid derivations must have finite height, then the top part is smaller than the full derivation and is hence different, so we're good.}, we can apply the induction hypothesis $P(e_0 \to e_0')$ and $\vdash e_0 : \tau'$ to get $\vdash e_0' : \tau'$; but once again, we're stuck. 
+
+We will now need to employ structural induction on $E$ again to show the proposition $P''(E) \triangleq \vdash E[e] : \tau \wedge \vdash e:\tau' \wedge \vdash e':\tau' \implies \vdash E[e'] : \tau$\footnote{We would typically bring this out as a full Context lemma, but it is pretty compact so I left it in} using the same subcontext relation $\prec'$ used above. Let's do a case analysis on the structure of $E$.
+\begin{itemize}
+\item $E = [\cdot]$ -- Here, $\tau = \tau'$, so we immediately get $\vdash e':\tau$.
+\item $E = E_1 ~ e_2$ -- Here, $\vdash E_1[e]~e_2 : \tau$ and $\vdash e,e':\tau'$. The only derivation to conclude in $\vdash E[e] : \tau$ is
+$$
+\inferrule*[right=TApp]{\vdash E_1[e] : \tau'' \to \tau \and \vdash e_2 : \tau''}{\vdash E_1[e]~e_2 : \tau}
+$$
+Since $E_1 \prec' E$, then by $P''(E_1)$, we get that $\vdash E_1[e'] : \tau'' \to \tau$. Furthermore, inverting the above \f{TApp} instance, we also get $\vdash e_2 : \tau''$, so we can immediately construct the derivation
+$$
+\inferrule*[right=TApp]{\vdash E_1[e'] : \tau'' \to \tau \and \vdash e_2:\tau''}{\vdash E_1[e']~e_2 : \tau}
+$$
+which shows the case.
+\item $E = v~E_2$ -- Here, $\vdash v~E_2[e] : \tau$ and $\vdash e,e':\tau'$. The only derivation to conclude $\vdash E[e] : \tau$ must be of the form
+$$
+\inferrule*[right=TApp]{\vdash v : \tau'' \to \tau \and \vdash E_2[e] : \tau''}{\vdash v~E_1[e] : \tau}
+$$
+which gives the derivations for $\vdash v:\tau'' \to \tau$ and $\vdash E_2[e]:\tau''$. But since $E_2 \prec E$, we can apply the induction hypothesis $P''(E_2)$ to get $\vdash E_2[e'] : \tau''$, from which we can construct the derivation
+$$
+\inferrule*[right=TApp]{\vdash v : \tau'' \to \tau \and \vdash E_2[e'] : \tau''}{\vdash v~E_1[e'] : \tau}
+$$
+which shows the case.
+\item $E = \#k~E'$ -- Here, $\vdash \#k~E'[e] : \tau_k$ and $\vdash e,e':\tau'$. The only derivations to conclude in $\vdash E[e] : \tau_k$ must be of the form
+$$
+\inferrule*[right=TProj]{\vdash E'[e] : (\tau_1 * \cdots * \tau_n)\backslash\Rec{a_1,\cdots,a_m} \and k \ne a_i}{\vdash \#k~E'[e] : \tau_k}
+$$
+but since $E' \prec' E$, then $P''(E')$ gives $\vdash E'[e'] : (\tau_1 * \cdots * \tau_n)\backslash\Rec{a_1,\cdots,a_m}$, from which we can construct a new derivation
+$$
+\inferrule*[right=TProj]{\vdash E'[e'] : (\tau_1 * \cdots * \tau_n)\backslash\Rec{a_1,\cdots,a_m} \and k \ne a_i}{\vdash \#k~E'[e'] : \tau_k}
+$$
+which shows the case. 
+\item $E = \#k~E_1 := e_2$ -- Here, $\vdash \#k~E_1[e] := e_2 : \tau$ and $\vdash e,e':\tau'$. The only derivations to conclude in the above must be of the form
+$$
+\inferrule*[right=TInit]{\vdash E_1[e] : \tau\backslash\Rec{k} \and \vdash e_2 : \tau_k}{\vdash \#k~E_1[e] := e_2 : \tau}
+$$
+since $E_1 \prec' E$, then we can apply the induction hypothesis $P''(E_1)$ to get $\vdash E_1[e'] : \tau\backslash\Rec{k}$, from which we can construct the derivation
+$$
+\inferrule*[right=TInit]{\vdash E_1[e'] : \tau\backslash\Rec{k} \and \vdash e_2 : \tau_k}{\vdash \#k~E_1[e'] := e_2 : \tau}
+$$
+which shows the the case.
+\item $E = \#k~v := E_2$ -- Here, $\vdash \#k~v := E_2[e] : \tau$ and $\vdash e,e' : \tau'$. The only derivations to conclude in the above must be of the form
+$$
+\inferrule*[right=TInit]{\more{1} \and \vdash E_2[e] : \tau_k}{\vdash \#k~v := E_2[e] : \tau}
+$$
+but since $E_2 \prec' E$, we can apply the induction hypothesis $P''(E_2)$ to get $\vdash E_2[e'] : \tau_k$, and construct the derivation
+$$
+\inferrule*[right=TInit]{\more{1} \and \vdash E_2[e'] : \tau_k}{\vdash \#k~v := E_2[e'] : \tau}
+$$
+which shows the case and concludes the proof of $\forall E. P''(E)$.\hfill\qed
+\end{itemize}
+
+Finally, because we have $\vdash E[e_0] : \tau, \vdash e_0,e_0':\tau'$ and $P''(E)$, we get $\vdash E[e_0'] : \tau$, which shows the case and concludes the proof of preservation. \hfill\qed
+\end{description}
+\end{proof}
+\end{lemma}
+
+Of course, we're going to need to give the substitution lemma.
+\begin{lemma}[Substitution]
+$$
+\Gamma, x:\tau' \vdash e : \tau \wedge \vdash  v:\tau' \implies \Gamma \vdash e\Rec{v/x} : \tau
+$$
+\begin{proof}
+As per the proof in the lecture notes, we will prove this by induction on the derivation of the typechecking judgment $\Gamma \vdash e:\tau$ (using the immediate subderivation relation which we've already argued to be well-founded). Our induction hypothesis is simply just
+$$
+P(\Gamma,x:\tau' \vdash e:\tau) \triangleq \vdash v:\tau' \implies \Gamma \vdash e\Rec{v/x} : \tau
+$$
+Let's do a case analysis on the structure of $e$.
+\begin{itemize}
+\item $e = b$ -- Here, $e\Rec{v/x} = e$, so $\Gamma \vdash b\Rec{v/x} : \tau$ holds trivially.
+\item $e = x$ -- Here, $e$ is the variable we want to replace, so $e\Rec{v/x} = v$; furthermore, $\Gamma,x:\tau' \vdash x:\tau \implies \tau = \tau'$. Therefore, we easily get $\Gamma \vdash x\Rec{v/x} = v : \tau' = \tau$, which shows the case.
+\item $e = y \ne x$ -- Here, $y\Rec{v/x} = y$, so if $\Gamma,x:\tau' \vdash y : \tau$, then from \f{TVar}, then $\Gamma(y) = \tau$. From this, we can immediately construct $\Gamma \vdash y\Rec{v/x} = y : \Gamma(y) = \tau$, which shows the case.
+\item $e = \lambda x:\tau''.e'$ -- Here, $e\Rec{v/x} = e$, so we can get a derivation $\Gamma,x:\tau' \vdash e:\tau'' \to \tau''' = \tau$, which looks like
+$$
+\inferrule*[right=TLam]{\Gamma,x:\tau',x:\tau'' \vdash e' : \tau'''}{\Gamma,x:\tau' \vdash e:\tau'' \to \tau'''}
+$$
+so we get for free the derivation up top: $\Gamma,x:\tau',x:\tau'' \vdash e' : \tau''' \iff \Gamma,x:\tau'' \vdash e' : \tau'''$. From this, we can construct the derivation
+$$
+\inferrule*[right=TLam]{\Gamma,x:\tau'' \vdash e' : \tau'''}{\Gamma \vdash e:\tau'' \to \tau'''}
+$$
+but since $e = e\Rec{v/x}$, this shows the case.
+\item $e = \lambda y:\tau''.e'$ where $x\ne y$ -- Now, because we have $\vdash v:\tau'$ (so that $v$ is well-formed), then $v$ cannot contain free variables, so we fall into the substitution case where $y \notin \f{Fvs}(v)$, and $e\Rec{v/x} = \lambda y:\tau''.e'\Rec{v/x}$.
+
+Now, the only possible derivation of $\Gamma,x:\tau' \vdash \lambda y:\tau''.e' : \tau'' \to \tau'' = \tau'$ must look like
+$$
+\inferrule*[right=TLam]{\Gamma,x:\tau',y:\tau'' \vdash e':\tau'''}{\Gamma,x:\tau' \vdash \lambda y:\tau''.e' : \tau'' \to \tau'''}
+$$
+from this, we get the derivation $\Gamma,x:\tau',y:\tau'' \vdash e':\tau'''$ which $\prec \Gamma,x:\tau' \vdash e:\tau$, so we can use
+$P((\Gamma,y:\tau''),x:\tau' \vdash e':\tau''')$ and $\vdash v:\tau'$ to get $\Gamma,y:\tau'' \vdash e'\Rec{v/x}:\tau'''$. But then, we can construct the derivation
+$$
+\inferrule*[right=TLam]{\Gamma,y:\tau'' \vdash e'\Rec{v/x}:\tau'''}{\Gamma \vdash \lambda y:\tau''. e'\Rec{v/x}:\tau'' \to \tau''' = \tau}
+$$
+hence giving $\Gamma \vdash e\Rec{v/x} : \tau$ which shows the case.
+
+\item $e = e_1~e_2$ -- Here, $e\Rec{v/x} = e_1\Rec{v/x}~e_2\Rec{v/x}$, and we have $\Gamma, x:\tau' \vdash e_1~e_2 : \tau$, which must have a derivation of the form
+$$
+\inferrule*[right=TApp]{\Gamma, x:\tau' \vdash e_1 : \tau'' \to \tau \and \Gamma, x:\tau' \vdash e_2 : \tau''}{\Gamma, x:\tau' \vdash e_1~e_2 : \tau}
+$$
+from this we get the derivations $\Gamma, x:\tau' \vdash e_1 : \tau'' \to \tau$ and $\Gamma, x:\tau' \vdash e_2 : \tau''$, both of which are subderivations of $\Gamma,x:\tau' \vdash e : \tau$, so we can apply the induction hypothesis on both $P(\Gamma, x:\tau' \vdash e_1 : \tau'' \to \tau)$ to get $\Gamma \vdash e_1\Rec{v/x} : \tau'' \to \tau$ and $\Gamma \vdash e_2\Rec{v/x} : \tau''$. Now, we can just construct the derivation
+$$
+\inferrule*[right=TApp]{\Gamma \vdash e_1\Rec{v/x} : \tau'' \to \tau \and \Gamma \vdash e_2\Rec{v/x} : \tau''}{\Gamma \vdash e_1\Rec{v/x}~e_2\Rec{v/x} : \tau}
+$$
+which shows the case.
+
+\item $e = (v_1,\cdots, v_n)$ -- Here, $e\Rec{v/x} = (v_i\Rec{v/x})$ and we have $\Gamma, x:\tau' \vdash (v_1,\cdots, v_n) : \tau = (\tau_i)\backslash\Rec{a_i}$, which must only have derivations of the form
+$$
+\inferrule*[right=TTuple]{\forall_{a_i}. \Gamma,x:\tau' \vdash v_{a_i} : 1 \and \forall_{j \ne a_i}. \Gamma, x:\tau' \vdash v_{j} : \tau_j}{\Gamma, x:\tau' \vdash (v_1,\cdots, v_n) : (\tau_j)\backslash\Rec{a_i}}
+$$
+but for each such derivation, we can use the induction hypothesis (or some kind of a normal-form lemma on the $1$-type) on each of $P(\Gamma,x:\tau' \vdash v_{a_i} : 1)$ to get $\Gamma \vdash v_{a_i}\Rec{v/x} : 1$ and on $P(\Gamma,x:\tau' \vdash v_j : \tau_j)$ for $j\ne a_i$ to get $\Gamma \vdash v_j \Rec{v/x} : \tau_j$, from which we can construct the derivation
+$$
+\inferrule*[right=TTuple]{\forall_{a_i}. \Gamma \vdash v_{a_i}\Rec{v/x} : 1 \and \forall_{j \ne a_i}. \Gamma \vdash v_{j}\Rec{v/x} : \tau_j}{\Gamma, \vdash (v_1\Rec{v/x},\cdots, v_n\Rec{v/x}) : (\tau_j)\backslash\Rec{a_i} = \tau}
+$$
+for all such possible derivation, which shows the case.
+\item $e = \Malloc \tau_1 \times \cdots \times \tau_n$ -- Here, $e \Rec{v/x} = e$, $\tau = \tau_1 \times \cdots \times \tau_n$. We can immediately construct the derivation
+$$
+\inferrule*[right=TMalloc]{~}{\Gamma \vdash \Malloc \tau_1 \times \cdots \times \tau_n : \tau_1 \times \cdots \times \tau_n = \tau}
+$$
+which shows the case.
+\item $e = \#k~e'$ -- Here, $e\Rec{v/x} = \#k~e'\Rec{v/x}$. Now, $\vdash e:\tau_k$ must only have derivations of the form
+$$
+\inferrule*[right=TProj]{\Gamma,x:\tau' \vdash e' : (\tau_j)\backslash\Rec{a_i} \and k \ne a_i}{\Gamma,x:\tau'\vdash \#k~e' : \tau_k}
+$$
+for each such derivation, by the induction hypothesis on $P(\Gamma,x:\tau' \vdash e' : (\tau_j)\backslash\Rec{a_i})$, we get $\Gamma \vdash e'\Rec{v/x} : (\tau_j)\backslash\Rec{a_i}$, which we can use immediately to construct the derivation
+$$
+\inferrule*[right=TProj]{\Gamma \vdash e'\Rec{v/x} : (\tau_j)\backslash\Rec{a_i} \and k \ne a_i}{\Gamma\vdash \#k~e'\Rec{v/x} : \tau_k}
+$$
+which shows the case.
+\item $e = \#k~e_1 = e_2$ -- Here, $e\Rec{v/x} = \#k~e_1\Rec{v/x} = e_2\Rec{v/x}$ and $\Gamma,x:\tau' \vdash e : \tau$ can only have derivations of the form
+$$
+\inferrule*[right=TInit]{\Gamma,x:\tau' \vdash e_1 : (\tau_j)\backslash\Rec{a_i,k} \and \Gamma,x:\tau' \vdash e_2:\tau_k}{\Gamma,x:\tau' \vdash \#k~e_1 := e_2 : (\tau_j)\backslash\Rec{a_i}}
+$$
+applying the induction hypothesis on both of the subderivations above gives us $\Gamma \vdash e_1\Rec{v/x} : (\tau_j)\Rec{a_i,k}$ and $\Gamma \vdash e_2\Rec{v/x} : \tau_k$, which can be used immediately to build the derivation
+$$
+\inferrule*[right=TInit]{\Gamma \vdash e_1\Rec{v/x} : (\tau_j)\Rec{a_i,k} \and \Gamma \vdash e_2\Rec{v/x} : \tau_k}{\Gamma \vdash e\Rec{v/x} = \#k~e_1\Rec{v/x} := e_2\Rec{v/x} : (\tau_j)\backslash\Rec{a_i}}
+$$
+which shows the case and concludes the proof. \qedhere
+\end{itemize}
+\end{proof}
+\end{lemma}
+
+\item Formulate and prove a progress lemma, which states that a well-typed program is either in a normal form, or can be stepped into another program.
+\begin{lemma}[Progress]
+$$
+\vdash e : \tau \implies e \text{ is a value} \vee \exists e'. e \to e'
+$$
+\begin{proof}
+We will prove this by induction on the typing derivation of $e$ (with $\prec$ being the subderivation relation which we have already argued to be well-founded) on the proposition
+$$
+P(\vdash e:\tau) \triangleq e \text{ is a value} \vee \exists e'. e \to e'
+$$
+with a case analysis on on the structure of $e$. Note that we exclude the cases that are vacuously false, like $e = x$.
+\begin{itemize}
+\item $e = b$ -- $b$ is already a value, so this case is trivial.
+\item $e = \lambda x: \tau'. e'$ -- this is also already a value
+\item $e = (v_1, \cdots, v_n)$ -- this is also already a value
+\item $e = e_0~e_1$ -- Here, we have a derivation of the form
+$$
+\inferrule*[right=TApp]{\vdash e_0:\tau' \to \tau \and \vdash e_1 : \tau'}{\vdash e_0~e_1 : \tau}
+$$
+applying the induction hypothesis to both of the subderivations on top, we get that $e_0$ is either a value or steps to $e_0'$, and $e_1$ is either a value or steps to $e_1'$. Let's do a case-by-case analysis here based on excluded middle:
+\begin{itemize}
+\item if $e_0, e_1$ are both values, then by inspection, the only value that type checks to a function type is a lambda, so $e_0 = \lambda x : \tau'. e'$ and $e_1 = v_1$, at which point we can apply the $\beta$ reduction rule and take a step.
+\item if $e_0$ is not a value, then we can construct the evaluation context that $e = [e_0]~e_1$, and since $e_0 \to e_0'$, we can construct the derivation $\inferrule{e_0\to e_0'}{[e_0]~e_1 \to [e_0']~e_1}$, hence taking a step.
+\item $e_0$ is a value, but $e_1$ is not, then we can construct the evaluation context that $e = E[e_1] = e_0 ~ [e_1]$ and since $e_1 \to e_1'$, we can construct the derivation $\inferrule{e_1 \to e_1'}{e_0~[e_1] \to e_0~[e_1']}$, hence taking a step.
+\end{itemize}
+which shows the case.
+\item $e = \Malloc \tau_1 \times \cdots \times \tau_n$ -- Easy, $\inferrule{~}{e \to (\Null,\cdots,\Null)}$, hence taking a step.
+\item $e = \#k~ e'$ -- Here, we have must have some derivation of the form
+$$
+\inferrule*[right=TProj]{\vdash e':(\tau_j)\backslash\Rec{a_i} \and k \ne a_i}{ \vdash \#k~e' : \tau_k}
+$$
+so by applying the induction hypothesis on the only premise (a subderivation) on top, we get that either $e'$ is a value or it can take a step to $e''$. Let's do a case analysis here based on excluded middle:
+\begin{itemize}
+\item $e'$ is a value, in which case by inspection, the only way that a value can typecheck to a masked-tuple type shown above is if $e' = (v_1,\cdots,v_k,\cdots v_n)$. But then, we can just construct the derivation $\inferrule{~}{\#k~(v_1,\cdots,v_k,\cdots v_n) \to v_k}$, hence taking a step.
+\item $e' \to e''$, in which case we can construct an evaluation context $e = \#k~[e']$ and construct the derivation $\inferrule{e' \to e''}{\#k~[e'] \to \#k~[e'']}$, hence taking a step.
+\end{itemize}
+which shows the case.
+\item $e = \#k~e_1 := e_2$ -- Here, we must have some derivation of the form
+$$
+\inferrule*[right=TInit]{ \vdash e_1:(\tau_1*\cdots*\tau_n)\backslash\Rec{a_1,\dots,a_m,k} \and  \vdash e_2:\tau_k}{ \vdash \#k~e_1 := e_2 :  (\tau_1 * \cdots \tau_n)\backslash\Rec{a_1,\dots,a_m}}
+$$
+applying the induction hypothesis to both of the suderivations on top tells us that either $e_1$ is a value or it can step to $e_1'$, and the same for $e_2$. Here, let's do a case-by-case analysis based on excluded middle:
+\begin{itemize}
+\item Both $e_1$ and $e_2$ are values. Since $\vdash e_1:(\tau_1*\cdots*\tau_n)\backslash\Rec{a_1,\dots,a_m,k}$, then by inspection of the typing judgments, the only value that can be given that type must be of the form $(v_1, \cdots v_k \cdots, v_n)$ where $\vdash v_k : 1$ from the inspection also tells us that $v_k = \Null$. Let $e_2 = v_k'$, then we can immediately apply the derivation $\inferrule{~}{\#k~(v_1, \cdots v_k \cdots, v_n) := v_k' \to (v_1, \cdots v_k' \cdots, v_n)}$, hence taking a step.
+\item $e_1$ isn't a value. Here, we can construct an evaluation context $e = \#k~[e_1] := e_2$ so that we can construct the derivation $\inferrule{e_1 \to e_1'}{\#k~[e_1] := e_2 \to \#k~[e_1'] := e_2}$, hence taking a step.
+\item $e_1$ is a value but $e_2$ isn't. Here, we can construct an evaluation context $e = \#k~e_1 := [e_2]$ so that we can construct the derivation $\inferrule{e_2 \to e_2'}{\#k~e_1 := [e_2] \to \#k~e_1 := [e_2']}$, hence taking a step.
+\end{itemize}
+this shows the case and concludes the proof.\qedhere
+\end{itemize}
+\end{proof}
+\end{lemma}
+
+\item Formulate the soundness theorem.
+\begin{theorem}[Soundness]
+$$
+\vdash e:\tau \wedge e \to^* e' \implies e' \text{ is a value} \vee \exists e''. e' \to e''
+$$
+\end{theorem}
+\end{enumerate}
+
+\item The language, as described above, ensures that every element in a tuple is initialized exactly once. However,
+it is sometimes desirable to enforce reinitialization, for example, to disallow further accesses to some
+sensitive data, or when the computation is staged, to give the next stage a fresh start.
+
+Update the operational and static semantics to support enforcement of reinitializing an already initialized
+element of a tuple, while still ensuring the soundness. You do not have to redo the soundness proof.
+
+\vspace{4mm}
+
+Let's consider the subtyping relation between just $\tau$ and $\tau \backslash 1$. Now, we can use $\tau$ whenever $\tau \backslash 1$ is required, including reinitialization, because when we are working with
+$$
+\#k~x:\tau := e
+$$
+we are in effect promoting $x$ to
+$$
+\#k~x:\tau\backslash 1 := e
+$$
+We can draw this out as a Hasse diagram:
+\begin{figure}[H]
+\centering
+\caption{Hasse diagram of a singleton tuple.}
+\begin{tikzpicture}
+\node (top) {$\tau\backslash 1$};
+\node (bot) [below of=top] {$\tau$};
+\path (top) edge (bot);
+\end{tikzpicture}
+\end{figure}
+Similarly, suppose we have a tuple type $\tau = (\tau_1,\tau_2)$, we can use $\tau$. Furthermore, anytime we have a $\tau\backslash 1$,  we can use it when $\tau \backslash\Rec{1,2}$ is expected, and so on. This can be drawn as
+\begin{figure}[H]
+\centering
+\caption{Hasse diagram of a pair.}
+\begin{tikzpicture}[node distance=1.5cm]
+\node (top) {$\tau\backslash \Rec{1,2}$};
+\node (1) [below left of=top] {$\tau \backslash 1$};
+\node (2) [below right of=top] {$\tau \backslash 2$};
+\node (bot) [below left of=2] {$\tau$};
+\path (top) edge (1) edge (2) (1) edge (bot) (2) edge (bot);
+\end{tikzpicture}
+\end{figure}
+
+the triple case is the most illuminating
+\begin{figure}[H]
+\centering
+\caption{Hasse diagram of a triple. We're allowed to substitute a type for any other as long as the other type can be reached using only upward edges from the source type.}
+\begin{tikzpicture}[node distance=1.6cm]
+\node (top) {$\tau\backslash \Rec{1,2,3} \sim \Null$};
+\node (12) [below left of=top,node distance=2.262cm] {$\tau \backslash \Rec{1,2}$};
+\node (13) [below of=top] {$\tau \backslash \Rec{1,3}$};
+\node (23) [below right of=top,node distance=2.262cm] {$\tau \backslash \Rec{2,3}$};
+\node (2) [below of=13] {$\tau \backslash 2$};
+\node (1) [below of=12] {$\tau \backslash 1$};
+\node (3) [below of=23] {$\tau \backslash 3$};
+\node (bot) [below of=2] {$\tau$};
+\path (top) edge (12) edge (13) edge (23) (13) edge (1) edge (3) (12) edge (1) edge (2) (23) edge (2) edge (3) (1) edge (bot) (2) edge (bot) (3) edge (bot);
+\end{tikzpicture}
+\end{figure}
+
+Each time you do an update, you're effectively moving down a level (or staying the same if you're reinitializing a non-masked field) because everything on the lower levels can be used as if they. Therefore, this subtyping relation concisely captures the complete lattice of $(P_\omega, \subseteq)$! Therefore, when we want to reinitialize the second field of $\tau\backslash 1$, we can just use the fact that $\tau\backslash 1\le \tau\backslash \Rec{1,2}$ to use it as if it was masked!
+
+Now, because we originally made the SOS behave as if there were no constraints on the initialization (beyond count mismatching), we don't need to do anything extra for the operational semantics. Furthermore, we can bake the subsumption semantics into the typing judgments themselves. To do this, note that we don't have to change anything on the $\Gamma \vdash \Malloc (\tau_i) : (\tau_i) \Rec{i}$ because $(\tau_i)\Rec{i}$ is already $\top$. So the only place we need to change is the \f{TTuple} rule. We can instead rewrite it as
+$$
+\inferrule*[right=TTuple-Subsumption]{\exists B. \forall i \in B. \Gamma \vdash v_i : 1 \and \forall j \notin B. \Gamma \vdash v_j : \tau_j \and B \subseteq A}{\Gamma \vdash (v_i) : (\tau_i) \backslash A}
+$$
+
+This makes sense: the only situations relevant to tuples during which we would  expect to get stuck occurs only when we attempt to use an uninitialized field of a tuple. This subsumption semantic only allows us to use a tuple when it's higher up on the lattice (aka when the program expects less fields to be filled) so it can never attempt to use a noninitialized field, only treat possibly filled fields as if they are uninitialized, which is already well-defined in the structural operational semantic. So in effect, we're just making the type system more complete :)
+\end{enumerate}
+
+\item Continuation Passing Style
+
+In this problem you will implement a continuation passing style translation.
+
+The source and target languages for this question are similar respectively to the source language and the second intermediate language of the lecture notes. The source language is described below
+$$
+e ::= n \mid x \mid \lambda x.e \mid e_0~e_1 \mid (e_i) \mid \#n~e \mid e_0 + e_1 \mid \Let{x = e_0}{e_1} \mid \Ifp{e_0}{e_1}{e_2} \mid \g{cwcc}~e
+$$
+\begin{enumerate}
+\item Extend the CPS translation given in Lecture 16 with a translation for the \g{cwcc} construct.
+
+\vspace{4mm}
+\section*{Translation into \f{Il1}}
+At first glance, we would want to translate \g{cwcc} immediately as
+$$
+\trans{}{\g{cwcc}~e} k = \trans{}{e}(\lambda f. f~k~k)
+$$
+but there's a slight problem with this method of translation where we allow continuations to be administrative lambdas: let's just illustrate this with a really simple example:
+\begin{align*}
+\trans{}{\g{cwcc}~(\lambda f. f~3)} k &= \trans{}{\lambda f. f~3}(\lambda g.g~k~k)\\
+&= \Let{k' = \lambda g.g~k~k}{k'~(\lambda fk''. \trans{}{f~3} k'')} \\
+&=_\eta \Let{k' = \lambda g.g~k~k}{k'~(\lambda fk''. f~3~ k'')} \\
+&=_{\beta\eta} (\lambda fk''.f~3~k'')~k~k \\
+&=_\beta k~3~k
+\end{align*}
+now, suppose this was part of an addition operation, then we would've have translated that operation into a continuation as an administrative lambda:
+$$
+\trans{}{3 + e} \g{halt} = \trans{}{3}(\lambda n. \trans{}{e} (\lambda m. \g{halt}~n+m))
+$$
+so if $\trans{}{3} k = k~3$ and $e = \g{cwcc}(\lambda f. f~3)$ as above, the entire thing reduces down to
+$$
+(\lambda n. \Let{k = \lambda m. \g{halt}~n+m}{k~3~k})~3
+$$
+see the problem yet? Let's do one more round of $\beta$ reduction:
+$$
+\Let{k = \lambda m. \g{halt}~3+m}{k~3~k}
+$$
+and one last reduction gets us to
+$$
+(\lambda m. \g{halt}~3+m)~3 ~ (\lambda m. \g{halt}~3+m)
+$$
+here, we're applying a 1-adic function to 2 arguments! Recall that we're translating all abstractions as 2-adic functions, but since we're allowed to call continuations, which were translated as 1-adic administrative lambdas, we're going to have an argument mismatch problem. 
+
+
+In order to support \g{cwcc}, not only do we need the above translation, we also need to make all administrative lambdas into 2-adic functions as well, where the first argument is the value given to the continuation.% and the second a dummy argument for function calls to pass in their current continuations. 
+
+But this raises a good question: what should we stick into that second parameter for continuations? Coupled to this question is the question of how to handle a \g{cwcc} into a function that returns? How should $\g{cwcc} (\lambda x.x)$ behave? Well, here, we pass it the current continuation $k$, but it never calls $k$, instead, it returns... and that's the question:
+\begin{itemize}
+\item Where does it return to?
+\item What does it return with?
+\end{itemize}
+
+Here, I'm going to return back to the most recently bound continuation: since this is treated as a function, this is just that second argument. Furthermore, it should just return what ever it evaluates to as the argument. That is, $\g{cwcc} ~f$ is pretty much calling $f$ with the current continuation!
+
+$$
+\trans{}{\g{cwcc~e}} \underbrace{k}_{\g{current}} = \trans{}{e}(\lambda f\kappa. f\tm{1}{k}\tm{2}{k})
+$$
+\begin{tikzpicture}[overlay]
+\node (3) [below of=2,node distance=0.8cm] {where to go in case of returning};
+\node (4) [above of=1,node distance=0.8cm] {the argument to f};
+\path [->] (3) edge (2) (4) edge (1);
+\end{tikzpicture}
+
+so we will evaluate $e$, drop its value and the most recent continuation off into $\lambda f\kappa.f~k~k$, and we will call $f$ with the current continuation as the argument, but in case $f$ returns, it will drop it off into $k$ as the point of return. %In essence, we're discarding $\kappa$ because we want to make sure that it always corresponds to the current continuation anyways.
+
+Let's first describe \f{il1}, which is the intermediate language that we're going to translate into first.
+\begin{align*}
+v &::= n \mid x \mid \lambda xk.c \mid \g{halt} \\
+e &::= v \mid v_0 + v_1 \mid (v_i) \mid \pi_n v \mid \Ifp{v_0}{v_1}{v_2} \\
+c &::= \Let{x = e}{c} \mid v_0~v_1~v_2
+\end{align*}
+
+Continuations will be modeled as $\lambda x\kappa.c$ where the second $\kappa$ will be guaranteed to be discarded.\footnote{Here, we discard the $\kappa$ because we're doing under the assumption that a continuation will never return, but returning is symbolized by calling that second continuation argument (as with the functions). Therefore, we never use it, and we can pass into it anything we want.} We will define this translation from source to \f{il1} as
+\begin{align*}
+\trans{}{n}k &= k~n~k \\
+\trans{}{x}k &= k~x~k \\
+\trans{}{\lambda x.e}k &= k~(\lambda xk'. \trans{}{e}~k')~k \\
+\trans{}{e_0~e_1}k &= \trans{}{e_0}(\lambda f\kappa. \trans{}{e_1}(\lambda v\kappa'. f~v~k)) \\
+\trans{}{(e_1,\cdots,e_n)} k &= \trans{}{e_1}(\lambda x_1\kappa_1. \cdots \trans{}{e_n}(\lambda x_n\kappa_n. k~(x_1,\cdots,x_n)~k)\cdots) \\
+\trans{}{\pi_n~e} k &= \trans{}{e} (\lambda p\kappa. \Let{v = \#n~p}{k~v~k}) \\
+\trans{}{e_0 + e_1} k &= \trans{}{e_0} (\lambda x_0\kappa_0. \trans{}{e_1} (\lambda x_1\kappa_1. \Let{n = x_0 + x_1}{k~n~k})) \\
+\trans{}{\Let{x = e_1}{e_2}} k &= \trans{}{e_1}(\lambda x\kappa. \trans{}{e_2}~k) \\
+\trans{}{\Ifp{e_0}{e_1}{e_2}} k &= \trans{}{e_0}(\lambda b\kappa_0. \trans{}{e_1} (\lambda v_1\kappa_1. \trans{}{e_2} (\lambda v_2\kappa_2. k~(\Ifp{b}{v_1}{v_2})~k))) \\
+\trans{}{\g{cwcc}~e} k &= \trans{}{e}(\lambda f\kappa. f~k~k)
+\end{align*}
+but of course, we can always stick whatever we want in that second argument of the continuation calls, and we can in fact optimize this translation a bit by actually doing this inline eta-reduction of the $k$ (rather than translating the terms as continuation terms): Here, $k \in \f{il1}.\g{val}$.
+\begin{align*}
+\trans{}{n}k &= k~n~\g{halt} \\
+\trans{}{x}k &= k~x~\g{halt} \\
+\trans{}{\lambda x.e}k &= k~(\lambda xk'. \trans{}{e}~k')~\g{halt} \\
+\trans{}{e_0~e_1}k &= \trans{}{e_0}(\lambda f\kappa. \trans{}{e_1}(\lambda v\kappa'. f~v~k)) \\
+\trans{}{(e_1,\cdots,e_n)} k &= \trans{}{e_1}(\lambda x_1\kappa_1. \cdots \trans{}{e_n}(\lambda x_n\kappa_n. k~(x_1,\cdots,x_n)~\g{halt})\cdots) \\
+\trans{}{\pi_n~e} k &= \trans{}{e} (\lambda p\kappa. \Let{v = \#n~p}{k~v~\g{halt}}) \\
+\trans{}{e_0 + e_1} k &= \trans{}{e_0} (\lambda x_0\kappa_0. \trans{}{e_1} (\lambda x_1\kappa_1. \Let{n = x_0 + x_1}{k~n~\g{halt}})) \\
+\trans{}{\Let{x = e_1}{e_2}} k &= \trans{}{e_1}(\lambda x\kappa. \trans{}{e_2}~k) \\
+\trans{}{\Ifp{e_0}{e_1}{e_2}} k &= \trans{}{e_0}(\lambda b\kappa_0. \trans{}{e_1} (\lambda v_1\kappa_1. \trans{}{e_2} (\lambda v_2\kappa_2. k~(\Ifp{b}{v_1}{v_2})~\g{halt}))) \\
+\trans{}{\g{cwcc}~e} k &= \Let{k' = k}{\trans{}{e}(\lambda f\kappa. f~k'~k')}
+\end{align*}
+this translation ensures that it's impossible for the value $k$ to be exponentially ``expanded''.
+\section*{Closure Conversion}
+One crucial aspect of of the translation between \f{il1} and \f{il2} is the process of lifting all of the abstractions to the top of the program, but we cannot do this until we're guaranteed that your programs are closed. There are a few ways of doing this. One can do another \f{CPS} translation from \f{il1} to \f{il1} again to model environment lookups and extensions as their own continuations, but this seemed a bit too much work. 
+
+Another way is to use static analysis (similar to the \f{Fvs} function) to determine all of the variables of a program, call it $\f{vs}(c)$. Let $\ba{\cdot}$ be an enumeration of $\f{vs}(c)$: for example, suppose $\f{vs}(c) = \Rec{x,y,z}$, then $\ba{\cdot}$ could be the function
+$$
+\ba{\cdot} = \Rec{x \mapsto 1, y \mapsto 2, z \mapsto 3}
+$$
+we can then use a tuple $\rho$ as an environment and do a translation triple
+\begin{align*}
+\trans{V}{v} \rho &: e \\
+\trans{E}{e} \rho &: (\g{var}\times e)~\g{list} \times e \\
+\trans{C}{e} \rho &: c
+\end{align*}
+given as
+\begin{align*}
+\trans{V}{n}\rho &= n \\
+\trans{V}{x}\rho &= \pi_{\ba{x}}\rho \\
+\trans{V}{\lambda xk.c} \rho &= (p, \lambda y_{\ba{x}}\rho'. \Let{y_i = \pi_i \rho' ~ (\forall y_i \ne y_{\ba{x}} \in \f{vs}(c))}{\Let{\rho'' = (y_i)}{\trans{C}{c}\rho''}} \\
+\vdots \\
+\trans{C}{v_0~v_1}\rho &= \Let{fn = \trans{V}{v_0}\rho, \rho' = \pi_1 fn, f = \pi_2 fn, v' = \trans{V}{v_1}\rho}{f~v'~\rho'} \\
+\vdots
+\end{align*}
+However this generates an excessive amount of boilerplate code to update the environment. Therefore, an easier alternative is to use an idea of explicitly abstracting over all of the non-closed variables.
+
+To do this, we will first define the target language of this closure conversion as \f{il1} with a slight modification. Let $\bar\rho$ be a sequence of variables $\rho_1, \cdots, \rho_n = \f{vs}(c)$, we can define the target language as
+\begin{align*}
+v &::= n \mid x \mid \lambda xk\bar\rho.c \mid \g{halt} \\
+e &::= v \mid v_0 + v_1 \mid (v_i) \mid \pi_n v \mid \Ifp{v_0}{v_1}{v_2} \\
+c &::= \Let{x = e}{c} \mid v_0~v_1~v_2~\bar\rho
+\end{align*}
+with natural domains for the translations
+\begin{align*}
+\trans{V}{v} \rho &: v \\
+\trans{E}{e} \rho &: e \\
+\trans{C}{e} \rho &: c
+\end{align*}
+given by
+\begin{align*}
+\trans{V}{n} &= n \\
+\trans{V}{x} &= \rho_{x} \\
+\trans{V}{\g{halt}} &= \g{halt} \\
+\trans{V}{\lambda xk.c} &= \lambda xk\bar\rho. \Let{\rho_{\ba{x}} = x, \rho_{\ba{k}} = k}{\trans{C}{c}} \\
+\trans{E}{v} &= \trans{V}{v} \\
+\trans{E}{v_0 + v_1} &= \trans{V}{v_0} + \trans{V}{v_1} \\
+\trans{E}{(v_i)} &= \pa{\trans{V}{v_i}} \\
+\trans{E}{\pi_n v} &= \pi_n \trans{V}{v} \\
+\trans{E}{\Ifp{v_0}{v_1}{v_2}} &= \Ifp{\trans{V}{v_0}}{\trans{V}{v_1}}{\trans{V}{v_2}} \\
+\trans{C}{v_0~v_1~v_2} &= \trans{V}{v_0}~\trans{V}{v_1}~\trans{V}{v_2} \\
+\trans{C}{\Let{x = e}{c}} &= \Let{\rho_{\ba{x}} = \trans{E}{e}}{\trans{C}{c}}
+\end{align*}
+
+For example, suppose I have the command 
+$$
+c \triangleq \Let{f = \lambda xk. k~ (x + 1)~k}{f~4~\g{halt}}
+$$
+there are three variables here, $x,k,f$, so we can construct the injection:
+$$
+\ba{\cdot} = \Rec{x \mapsto 1, k \mapsto 2, f \mapsto 3}
+$$
+so
+$$
+\bar\rho = \rho_1, \rho_2, \rho_3
+$$
+then the above would translate into
+\begin{align*}
+\trans{C}{c} &= \Let{\rho_{\ba{f}} = \trans{E}{\lambda xk. k (x + 1)k}}{\trans{C}{f~4~\g{halt}}} \\
+\intertext{expand the $\mathcal{E}$ first}
+&= \Let{\rho_{\ba{f}} = \trans{V}{\lambda xk. k (x + 1)k}}{\trans{C}{f~4~\g{halt}}} \\
+&= \Let{\rho_{\ba{f}} = \lambda xk\rho_1\rho_2\rho_3.\Let{\rho_{\ba{x}} = x,\rho_{\ba{k}} = k}{\trans{C}{k~(x + 1)~k}}}{\trans{C}{f~4~\g{halt}}} \\
+\vdots \\
+&= \Let{\rho_{\ba{f}} = \lambda xk\rho_1\rho_2\rho_3.\Let{\rho_{\ba{x}} = x,\rho_{\ba{k}} = k}{\rho_{\ba{k}}(\rho_{\ba{x}} + 1)\rho_{\ba{k}}\rho_1\rho_2\rho_3}}{{\rho_{\ba{f}}~4~\g{halt}~\rho_1\rho_2\rho_3}} \\
+&=\Let{\rho_{3} = \lambda xk\rho_1\rho_2\rho_3.\Let{\rho_{1} = x,\rho_{2} = k}{\rho_{2}(\rho_{1} + 1)\rho_{2}\rho_1\rho_2\rho_3}}{{\rho_{3}~4~\g{halt}~\rho_1\rho_2\rho_3}}
+\end{align*}
+\section*{Lambda Hoisting}
+This is trivial, go through everything, and for each lambda encountered, take it out, name it, and replace the lambda with the new variable.
+\section*{Value Lowering}
+Note that in the final \f{il2}, expressions and applications only work on variables. In effect, it is the closed, lambda lifted \f{il1} with the restriction that the values are only variables. So we can just translate the hoisted \f{il1} into the following language
+\begin{align*}
+v &::= x \\
+e &::= v \mid \g{val}(n) \mid \g{val}(\g{halt}) \mid v_0 + v_1 \mid (v_i) \mid \pi_n v \mid \Ifp{v_0}{v_1}{v_2} \\
+c &::= \Let{x = e}{c} \mid v_0~v_1~v_2~\bar\rho
+\end{align*}
+We want to define a set of ``lowering'' translation $\trans{LV}{v}, \trans{LE}{e}, \trans{LC}{c}$ that binds all non-variable values (integers and halts) into their own variables. Therefore, we need to have both the value and the expressions translation be able to be abstracted as bindings.
+\begin{align*}
+\trans{LV}{v} &: (\g{var} \times e) \g{list} \times \g{var} \\
+\trans{LE}{e} &: (\g{var} \times e) \g{list} \times \g{e} \\
+\trans{LC}{c} &: c
+\end{align*}
+We will use the notation
+$$
+\Let{x_i = e_i}{x}
+$$
+to mean
+$$
+([(x_i,e_i); \cdots (x_n,e_n)],x)
+$$
+and respective syntax sugary for expressions. Our translation is given as
+\begin{align*}
+\trans{LV}{n} &= \Let{x = n}{x} \\
+\trans{LV}{x} &= ([], x) \\
+\trans{LV}{\g{halt}} &= \Let{x = \g{halt}}{x} \\
+\trans{LE}{v_0 + v_1} &= \Let{(l_0, x_0) = \trans{LV}{v_0}}{\Let{(l_1,x_1) = \trans{LV}{v_1}}{(l_0 \cup l_1, x_0 + x_1)}} \\
+\trans{LE}{(v_0, \cdots, v_n)} &= \Let{(l_0, x_0) = \trans{LV}{v_0}}{\cdots\Let{(l_n,x_n) = \trans{LV}{v_n}}{(\bigcup l_k, (x_1,\cdots, x_n))}} \\
+\trans{LE}{\pi_n v} &= \Let{(l,x) = \trans{LV}{v}}{(l, \pi_n x)} \\
+\trans{LC}{\Let{x = e}{c}} &= \Let{(x_i = e_i, e') = \trans{LE}{e}}{\underbrace{\Let{x_i = e_i,x = e'}{\trans{LC}{c}}}_{\mbox{this is the actual command returned}}} \\
+\trans{LC}{v_0~v_1~v_2} &= \Let{(x_i = e_i, x) = \trans{LV}{v_0}, (y_j = e'_j, y) = \trans{LV}{v_1}, (z_k = e''_k, z) = \trans{LV}{v_2}}{}\\&~~~~{\Let{x_i = e_i,y_j = e'_j,z_k=e''_k}{x ~ y~z}} 
+\end{align*}
+After this, the translation to \f{il2} is trivial.
+\end{enumerate}
+\end{enumerate}
+
+\end{document}
