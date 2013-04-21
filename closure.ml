@@ -17,16 +17,6 @@ let rec make_fresh x n : var list =
   else
     (fresh x) :: (make_fresh x (n-1))
 
-let rec expand_xi xs n g c : c =
-  match xs with
-  | x::tl ->
-    Let(x, g n, expand_xi tl (n+1) g c)
-  | [] ->
-    c
-
-let gindex p n =
-  Index(n+1, p)
-
 let rec close_v (g:var -> int) (v:v) (rhos:var list) : v =
   match v with
   | Int n -> v
@@ -44,6 +34,7 @@ and close_e (g:var -> int) (e:e) (rhos:var list) : e =
   | Tuple(vs) ->
     Tuple(List.map (fun v -> close_v g v rhos) vs)
   | Index(n,v) -> Index(n, close_v g v rhos)
+  | Ifp(v0,v1,v2) -> Ifp(close_v g v0 rhos, close_v g v1 rhos, close_v g v2 rhos)
 and close_c (g:var -> int) (c:c) (rhos:var list) : c =
   match c with
   | Let(x,e,c) ->
@@ -58,8 +49,6 @@ let rec vs_c (c:c) : VarSet.t =
   match c with 
   | Let(x,e',c') -> 
     VarSet.union (VarSet.union (vs_e e') ((vs_c c'))) (VarSet.singleton x)
-  (*| App(v1,v2)  -> 
-    VarSet.union (vs_v v1) (vs_v v2)*)
   | Call(v1,v2,v3,ps) -> 
     VarSet.union (VarSet.union (vs_v v1) (vs_v v2)) (vs_v v3)
 and vs_e (e:e) : VarSet.t =
@@ -70,10 +59,11 @@ and vs_e (e:e) : VarSet.t =
     List.fold_left (fun a v -> VarSet.union a (vs_v v)) VarSet.empty vs
   | Index(n,v) ->
     vs_v v
+  | Ifp(v0,v1,v2) ->
+    VarSet.union (vs_v v0) (VarSet.union (vs_v v1) ( vs_v v2))
 and vs_v (v:v) : VarSet.t =
   match v with
   | Var x -> VarSet.singleton x
-  (*| Lam(x,c) -> VarSet.union (vs_c c) (VarSet.singleton x)*)
   | Fun(x,k,ps,c) -> VarSet.union (VarSet.union (vs_c c) (VarSet.singleton x)) (VarSet.singleton k)
   | _ -> VarSet.empty
 

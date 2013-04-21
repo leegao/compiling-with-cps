@@ -65,6 +65,14 @@ and print_e (e:e) (i:int) : unit =
   | Index(n,v) ->
     pp ("#"^(string_of_int n));
     print_v v i
+  | Ifp(v0,v1,v2) ->
+    pp ("ifp (");
+    print_v v0 i;
+    pp (") (");
+    print_v v1 i;
+    pp (") (");
+    print_v v2 i;
+    pp(")");
 and print_v (v:v) (i:int): unit =
   match v with
   | Var x -> pp (""^x)
