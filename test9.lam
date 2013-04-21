@@ -1,2 +1,2 @@
-let facta = (fun g-> fun n-> ((g g) 0)) in
-((facta facta) 0)
+let facta = (fun g-> fun n-> ifp n then ((g g) 0) else 0) in
+((facta facta) (1))
