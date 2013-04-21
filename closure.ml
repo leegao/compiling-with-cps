@@ -81,6 +81,6 @@ let close c =
   let (g,n) = build_g c in
   let rhos = make_fresh "rho" n in
   let rec helper n c =
-    if n <= 0 then c else Let(List.nth rhos (n-1), Val Halt, helper (n-1) c) in
+    if n <= 0 then c else Let(List.nth rhos (n-1), Val (Int (-9999)), helper (n-1) c) in
   let c' = close_c g c rhos in
   helper n c'

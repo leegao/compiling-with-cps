@@ -12,10 +12,10 @@ let kap = fresh "kappa"
 
 let rec translate1 (e:exp) (k:Il1.v): Il1.c =
   match e with
-  | Num n -> Il1.Call(k, Il1.Int n, Il1.Halt, [])
-  | Var x -> Il1.Call(k, Il1.Var x, Il1.Halt, [])
+  | Num n -> Il1.Call(k, Il1.Int n, Il1.Int 0, [])
+  | Var x -> Il1.Call(k, Il1.Var x, Il1.Int 0, [])
   | Lambda(x,e) -> let k' = fresh "k'" in
-    Il1.Call(k, (Il1.Fun(x,k',[], translate1 e (Il1.Var k'))), Il1.Halt, [])
+    Il1.Call(k, (Il1.Fun(x,k',[], translate1 e (Il1.Var k'))), Il1.Int 0, [])
   | App(e0,e1) -> let v = fresh "v" and f = fresh "f" in
     translate1 e0 (Il1.Fun(f,kap,[], translate1 e1 (Il1.Fun(v,kap,[], Il1.Call(Il1.Var f, Il1.Var v, k, [])))))
   | Tuple(es) -> 
@@ -26,23 +26,26 @@ let rec translate1 (e:exp) (k:Il1.v): Il1.c =
         translate1 e (Il1.Fun(x,kap,[], helper tl (Il1.Var x::xs)))
       | [] ->
         let p = fresh "p" in
-        Il1.Let(p, Il1.Tuple(List.rev xs), Il1.Call(k, Il1.Var p, Il1.Halt, [])) in
+        Il1.Let(p, Il1.Tuple(List.rev xs), Il1.Call(k, Il1.Var p, Il1.Int 0, [])) in
     helper es []
   | Index(n,e) ->
     let p = fresh "p" in
-    translate1 e (Il1.Fun(p,kap,[], Il1.Let(p, Il1.Index(n, Il1.Var p), Il1.Call(k, Il1.Var p, Il1.Halt, []))))
+    translate1 e (Il1.Fun(p,kap,[], Il1.Let(p, Il1.Index(n, Il1.Var p), Il1.Call(k, Il1.Var p, Il1.Int 0, []))))
   | Plus(e0,e1) ->
     let x0 = fresh "x0" and x1 = fresh "x1" in
     translate1 e0 (Il1.Fun(x0,kap,[], translate1 e1 (Il1.Fun(x1,kap,[], 
-      Il1.Let(x0, Il1.Plus(Il1.Var x0, Il1.Var x1), Il1.Call(k, Il1.Var x0, Il1.Halt, []))
+      Il1.Let(x0, Il1.Plus(Il1.Var x0, Il1.Var x1), Il1.Call(k, Il1.Var x0, Il1.Int 0, []))
     ))))
   | Let(x,e1,e2) ->
     translate1 e1 (Il1.Fun(x,kap,[], translate1 e2 k))
   | Ifp(e0,e1,e2) ->
-    let b = fresh "b" and v1 = fresh "v1" and v2 = fresh "v2" in
-    translate1 e0 (Il1.Fun(b,kap,[], translate1 e1 (Il1.Fun(v1,kap,[], translate1 e2 
+    let b = fresh "b" and k' = fresh "k'" and f = fresh "f" in
+    (*translate1 e0 (Il1.Fun(b,kap,[], translate1 e1 (Il1.Fun(v1,kap,[], translate1 e2 
       (Il1.Fun(v2,kap,[], Il1.Let(b, Il1.Ifp(Il1.Var b, Il1.Var v1,Il1.Var v2), Il1.Call(k, Il1.Var b, Il1.Halt, []))))
-    ))))
+    ))))*)
+    let f0 = Il1.Fun(kap,kap,[], translate1 e1 (Il1.Var k')) and
+        f1 = Il1.Fun(kap,kap,[], translate1 e2 (Il1.Var k')) in
+    Il1.Let(k', Il1.Val k, translate1 e0 (Il1.Fun(b,kap,[], Il1.Let(f, Il1.Ifp(Il1.Var b, f0, f1), Il1.Call(Il1.Var f, Il1.Int 0, Il1.Int 0, [])))))
   | Cwcc(e) ->
     let k' = fresh "k" and f = fresh "f" in
     match k with

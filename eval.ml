@@ -2,6 +2,8 @@
 
 open Types
 
+let pp = Pprint.pp
+
 type fnclosure =
     TFnClosure of var * (var list) * tcom * (fnclosure list)
 
@@ -10,6 +12,17 @@ type tval =
   | TVTup of tval list
   | TVNum of int
   | TVHalt
+
+let rec ppt v =
+  match v with
+  | TVFn(xs, c, cs) ->
+    pp "Fn";
+  | TVTup(vs) ->
+    pp "Tup";
+  | TVNum(n) ->
+    pp ("int("^(string_of_int n)^")");
+  | TVHalt ->
+    pp "halt";
 
 exception EvalError of string
 exception EvalHalt of tval
@@ -43,7 +56,12 @@ let evalExp fncontext context exp =
       let v2 = evalVar fncontext context y in
       (match (v1, v2) with 
 	TVNum(i), TVNum(j) -> TVNum(i + j)
-      | _ ->  raise (EvalError("Adding non-numbers")))
+      | _ ->  
+      ppt v1;
+      pp "\n";
+      ppt v2;
+      pp "\n";
+      raise (EvalError("Adding non-numbers")))
   | TIfp(x, y, z) ->
       let v = evalVar fncontext context x in
       (match v with 

@@ -1,3 +1,2 @@
-let facta = (fun f-> fun n-> (ifp n then (n + ((fun x-> ((f f) x)) (n+ -1)))  else 0)) in
-let factorial = (facta facta) in
-(factorial 0)
+let facta = (fun g-> fun n-> ((g g) 0)) in
+((facta facta) 0)

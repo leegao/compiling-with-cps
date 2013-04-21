@@ -1,0 +1,93 @@
+call(fun facta,$kappa1 -> 
+  call(fun $f6,$kappa1 -> 
+    call(fun $v5,$kappa1 -> 
+      call($f6)($v5)(fun $f4,$kappa1 -> 
+        call(fun $v3,$kappa1 -> 
+          call($f4)($v3)(halt)
+        )(0)(0)
+      )
+    )(facta)(0)
+  )(facta)(0)
+)(fun g,$k'7 -> 
+  call($k'7)(fun n,$k'8 -> 
+    call(fun $f12,$kappa1 -> 
+      call(fun $v11,$kappa1 -> 
+        call($f12)($v11)(fun $f10,$kappa1 -> 
+          call(fun $v9,$kappa1 -> 
+            call($f10)($v9)($k'8)
+          )(0)(0)
+        )
+      )(g)(0)
+    )(g)(0)
+  )(0)
+)(0)
+let $fun27 = ^$v3, $kappa1, $rho26.
+let $rho18=$v3 in
+let $rho20=$kappa1 in
+let $halt2=halt in
+$rho24 $rho18 $halt2 in
+let $fun28 = ^$f4, $kappa1, $rho26.
+let $rho24=$f4 in
+let $rho20=$kappa1 in
+let $n46=0 in
+let $n47=0 in
+$fun27 $n46 $n47 in
+let $fun29 = ^$v5, $kappa1, $rho26.
+let $rho17=$v5 in
+let $rho20=$kappa1 in
+$rho23 $rho17 $fun28 in
+let $fun30 = ^$f6, $kappa1, $rho26.
+let $rho23=$f6 in
+let $rho20=$kappa1 in
+let $n45=0 in
+$fun29 $rho15 $n45 in
+let $fun31 = ^facta, $kappa1, $rho26.
+let $rho15=facta in
+let $rho20=$kappa1 in
+let $n44=0 in
+$fun30 $rho15 $n44 in
+let $fun32 = ^$v9, $kappa1, $rho26.
+let $rho16=$v9 in
+let $rho20=$kappa1 in
+$rho26 $rho16 $rho21 in
+let $fun33 = ^$f10, $kappa1, $rho26.
+let $rho26=$f10 in
+let $rho20=$kappa1 in
+let $n42=0 in
+let $n43=0 in
+$fun32 $n42 $n43 in
+let $fun34 = ^$v11, $kappa1, $rho26.
+let $rho19=$v11 in
+let $rho20=$kappa1 in
+$rho25 $rho19 $fun33 in
+let $fun35 = ^$f12, $kappa1, $rho26.
+let $rho25=$f12 in
+let $rho20=$kappa1 in
+let $n41=0 in
+$fun34 $rho14 $n41 in
+let $fun36 = ^n, $k'8, $rho26.
+let $rho13=n in
+let $rho21=$k'8 in
+let $n40=0 in
+$fun35 $rho14 $n40 in
+let $fun37 = ^g, $k'7, $rho26.
+let $rho14=g in
+let $rho22=$k'7 in
+let $n39=0 in
+$rho22 $fun36 $n39 in
+let $rho13=-9999 in
+let $rho14=-9999 in
+let $rho15=-9999 in
+let $rho16=-9999 in
+let $rho17=-9999 in
+let $rho18=-9999 in
+let $rho19=-9999 in
+let $rho20=-9999 in
+let $rho21=-9999 in
+let $rho22=-9999 in
+let $rho23=-9999 in
+let $rho24=-9999 in
+let $rho25=-9999 in
+let $rho26=-9999 in
+let $n38=0 in
+$fun31 $fun37 $n38
