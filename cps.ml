@@ -8,7 +8,6 @@ let fresh = Closure.fresh
 
 (* this is the "continuation" slot in continuations.
    obviously not going to be used *)
-let kdummy = fresh "kdummy"
 let kap = fresh "kappa"
 
 let rec translate1 (e:exp) (k:Il1.v): Il1.c =
@@ -183,14 +182,14 @@ let rec lower_defs defs =
   | [] ->
     []
   | _ ->
-    failwith "fail at lower_defs"
+    raise (Fail "fail at lower_defs")
 
 let rec tv v : var =
   match v with
   | Il1.Var x ->
     x
   | _ ->
-    failwith "fail at translating var"
+    raise (Fail "fail at translating var")
 and te e : texp =
   match e with
   | Il1.Val (Il1.Var x) ->
@@ -206,7 +205,7 @@ and te e : texp =
   | Il1.Index(n,v) ->
     TIndex(n, tv v)
   | Il1.Val _ ->
-    failwith "fail at translating expression values"
+    raise (Fail "fail at translating expression values")
 and tc c : tcom =
   match c with
   | Il1.Let(x,e,c) ->
@@ -225,7 +224,7 @@ let rec translate_to_IL2 defs cc : tprog =
   | [] ->
     TCom cc
   | _ ->
-    failwith "fail at translation to IL2"
+    raise (Fail "fail at translation to IL2")
     
 (* Implement this! *)
 let translate(e: exp): tprog =
