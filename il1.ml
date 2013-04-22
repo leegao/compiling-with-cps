@@ -5,9 +5,9 @@ open Format
 let pp = print_string
 
 type var = string
-type v = Int of int | Var of var | Fun of var * var * var list * c | Halt
+type v = Int of int | Var of var | Fun of var * var  * c | Halt
 and  e = Val of v | Plus of v * v | Tuple of v list | Index of int * v | Ifp of v * v * v
-and  c = Let of var * e * c | Call of v * v * v * var list
+and  c = Let of var * e * c | Call of v * v * v 
 and  def = var * v
 
 let rec spaces i =
@@ -34,7 +34,7 @@ let rec print_c (c:c) (i:int): unit =
     pp ")(";
     print_v v2 i;
     pp ")"*)
-  | Call(v1,v2,v3,ps) ->
+  | Call(v1,v2,v3) ->
     pp "call(";
     print_v v1 i;
     pp ")(";
@@ -86,7 +86,7 @@ and print_v (v:v) (i:int): unit =
     print_c c (i+2);
     pp "\n";
     pp (spaces i)*)
-  | Fun(x,k,ps,c) ->
+  | Fun(x,k,c) ->
     pp "fun ";
     pp x;
     pp ",";
