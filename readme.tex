@@ -686,7 +686,7 @@ we can then use a tuple $\rho$ as an environment and do a translation triple
 \trans{E}{e} \rho &: (\g{var}\times e)~\g{list} \times e \\
 \trans{C}{e} \rho &: c
 \end{align*}
-given as
+given as (see main.pdf for more)
 \begin{align*}
 \trans{V}{n}\rho &= n \\
 \trans{V}{x}\rho &= \pi_{\ba{x}}\rho \\
@@ -695,9 +695,10 @@ given as
 \trans{C}{v_0~v_1}\rho &= \Let{fn = \trans{V}{v_0}\rho, \rho' = \pi_1 fn, f = \pi_2 fn, v' = \trans{V}{v_1}\rho}{f~v'~\rho'} \\
 \vdots
 \end{align*}
-However this generates an excessive amount of boilerplate code to update the environment. Therefore, an easier alternative is to use an idea of explicitly abstracting over all of the non-closed variables.
+%However this generates an excessive amount of boilerplate code to update the environment. Therefore, an easier alternative is to use an idea of explicitly abstracting over all of the non-closed variables.
 
-To do this, we will first define the target language of this closure conversion as \f{il1} with a slight modification. Let $\bar\rho$ be a sequence of variables $\rho_1, \cdots, \rho_n = \f{vs}(c)$, we can define the target language as
+\subsection*{Extra: Dynamic Scoping}
+Here's an easier semantic for dynamic scoping; to do this, we will first define the target language of this closure conversion as \f{il1} with a slight modification. Let $\bar\rho$ be a sequence of variables $\rho_1, \cdots, \rho_n = \f{vs}(c)$, we can define the target language as
 \begin{align*}
 v &::= n \mid x \mid \lambda xk\bar\rho.c \mid \g{halt} \\
 e &::= v \mid v_0 + v_1 \mid (v_i) \mid \pi_n v \mid \Ifp{v_0}{v_1}{v_2} \\
