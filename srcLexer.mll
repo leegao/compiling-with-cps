@@ -21,8 +21,8 @@ rule lex =
       | "]"        { RBRACK }
       | ","        { COMMA }
       | "cwcc"      { CWCC }
-      | "fun"        { LAM }
-      | "->"        { DOT }
+      | "^"        { LAM }
+      | "."        { DOT }
       | "let"      { LET }
       | "="        { EQUALS }
       | "in"       { IN }

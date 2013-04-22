@@ -222,10 +222,8 @@ let rec translate_to_IL2 defs cc : tprog =
 (* Implement this! *)
 let translate(e: exp): tprog =
   let c = (translate1 e Il1.Halt) in
-  Il1.print_c c 0;
   let c' = Closure.close c in
   let (c'', defs) = hoist_c c' in
-  Il1.print_c c'' 0;
   let c''' = lower_c c'' and defs' = lower_defs defs in
   translate_to_IL2 defs' (tc c''')
 

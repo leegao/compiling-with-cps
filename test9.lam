@@ -1,2 +1,5 @@
-let facta = (fun g-> fun n-> ifp n then (((g g) 0) + 1) else 0) in
-((facta facta) (1))
+let timesa = (^f. ^m. ^n. (ifp m then (n + (((f f) (m + -1)) n)) else 0)) in
+let times = (timesa timesa) in
+let facta = (^f. ^n. (ifp n then ((times n) ((f f) (n+ -1)))  else 1)) in
+let factorial = (facta facta) in
+(factorial 4)

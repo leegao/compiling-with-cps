@@ -90,10 +90,10 @@ let rec evalCom fncontext (context:(var * tval) list) com =
       evalCom fncontext ((x,v)::context) com'
   | TApp(f :: args) -> 
       let fn = evalVar fncontext context f in
-      pp f;
+      (*pp f;
       pp ":\n";
       ppTV fn;
-      pp "\n\n\n\n\n";
+      pp "\n\n\n\n\n";*)
       (match fn with 
       | TVFn(formals, body, fncontextlex) -> 
         let newcontext:(var * tval)list = buildContext formals args in
