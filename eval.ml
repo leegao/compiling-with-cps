@@ -13,16 +13,26 @@ type tval =
   | TVNum of int
   | TVHalt
 
-let rec ppt v =
-  match v with
-  | TVFn(xs, c, cs) ->
-    pp "Fn";
-  | TVTup(vs) ->
-    pp "Tup";
-  | TVNum(n) ->
-    pp ("int("^(string_of_int n)^")");
-  | TVHalt ->
-    pp "halt";
+
+let rec ppTV tv = 
+  match tv with
+    TVFn(formals, body, fncontextlex) -> 
+      let rec ppvarlist = function
+        [] -> ()
+        | a::b::t -> (pp a; pp ", "; ppvarlist (b::t))
+        | b::[] -> (pp b)
+      in
+      (pp "function( "; ppvarlist formals; pp ")"; Pprint.ppTCom body)
+    | TVTup(vs) -> (pp"("; 
+		  let rec pptupl = function
+		      [] -> ()
+		    |	a::b::t -> (ppTV a; pp ", "; pptupl (b::t))
+		    |	b::[] -> (ppTV b)
+		  in
+		  pptupl vs;
+		  pp ")")
+    | TVNum(i) -> print_int i
+    | TVHalt -> pp "halt"
 
 exception EvalError of string
 exception EvalHalt of tval
@@ -57,10 +67,6 @@ let evalExp fncontext context exp =
       (match (v1, v2) with 
 	TVNum(i), TVNum(j) -> TVNum(i + j)
       | _ ->  
-      ppt v1;
-      pp "\n";
-      ppt v2;
-      pp "\n";
       raise (EvalError("Adding non-numbers")))
   | TIfp(x, y, z) ->
       let v = evalVar fncontext context x in
@@ -84,6 +90,10 @@ let rec evalCom fncontext (context:(var * tval) list) com =
       evalCom fncontext ((x,v)::context) com'
   | TApp(f :: args) -> 
       let fn = evalVar fncontext context f in
+      pp f;
+      pp ":\n";
+      ppTV fn;
+      pp "\n\n\n\n\n";
       (match fn with 
       | TVFn(formals, body, fncontextlex) -> 
         let newcontext:(var * tval)list = buildContext formals args in
@@ -99,7 +109,7 @@ let eval p =
   let rec eval' fncontext p =
     match p with
       TPLet (x, args, body, p') -> 
-	eval' (TFnClosure(x, args, body, fncontext)::fncontext) p'
+	    eval' (TFnClosure(x, args, body, fncontext)::fncontext) p'
     | TCom (com) -> evalCom fncontext [] com
   in
   try 

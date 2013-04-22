@@ -668,6 +668,11 @@ but of course, we can always stick whatever we want in that second argument of t
 \trans{}{\g{cwcc}~e} k &= \Let{k' = k}{\trans{}{e}(\lambda f\kappa. f~k'~k')}
 \end{align*}
 this translation ensures that it's impossible for the value $k$ to be exponentially ``expanded''.
+
+Furthermore, in order to implement the lazy semantics for the \g{ifp} statements, we can translate it as
+$$
+\trans{}{\Ifp{e_0}{e_1}{e_2}} k = \trans{}{e_0} (\lambda b\kappa. \Let{f = \Ifp{b}{\lambda \kappa\kappa. \trans{}{e_1} k}{\lambda \kappa\kappa. \trans{}{e_2} k}}{f~0~0})
+$$
 \section*{Closure Conversion}
 One crucial aspect of of the translation between \f{il1} and \f{il2} is the process of lifting all of the abstractions to the top of the program, but we cannot do this until we're guaranteed that your programs are closed. There are a few ways of doing this. One can do another \f{CPS} translation from \f{il1} to \f{il1} again to model environment lookups and extensions as their own continuations, but this seemed a bit too much work. 
 

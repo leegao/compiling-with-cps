@@ -32,14 +32,15 @@ let rec translate1 (e:exp) (k:Il1.v): Il1.c =
     let p = fresh "p" in
     translate1 e (Il1.Fun(p,kap,[], Il1.Let(p, Il1.Index(n, Il1.Var p), Il1.Call(k, Il1.Var p, Il1.Int 0, []))))
   | Plus(e0,e1) ->
-    let x0 = fresh "x0" and x1 = fresh "x1" in
+    let x0 = fresh "x0" and x1 = fresh "x1" and n = fresh "n" in
     translate1 e0 (Il1.Fun(x0,kap,[], translate1 e1 (Il1.Fun(x1,kap,[], 
-      Il1.Let(x0, Il1.Plus(Il1.Var x0, Il1.Var x1), Il1.Call(k, Il1.Var x0, Il1.Int 0, []))
+      Il1.Let(n, Il1.Plus(Il1.Var x0, Il1.Var x1), Il1.Call(k, Il1.Var n, Il1.Int 0, []))
     ))))
   | Let(x,e1,e2) ->
     translate1 e1 (Il1.Fun(x,kap,[], translate1 e2 k))
   | Ifp(e0,e1,e2) ->
     let b = fresh "b" and k' = fresh "k'" and f = fresh "f" in
+    let kap = fresh "kap" in
     (*translate1 e0 (Il1.Fun(b,kap,[], translate1 e1 (Il1.Fun(v1,kap,[], translate1 e2 
       (Il1.Fun(v2,kap,[], Il1.Let(b, Il1.Ifp(Il1.Var b, Il1.Var v1,Il1.Var v2), Il1.Call(k, Il1.Var b, Il1.Halt, []))))
     ))))*)
@@ -224,6 +225,7 @@ let translate(e: exp): tprog =
   Il1.print_c c 0;
   let c' = Closure.close c in
   let (c'', defs) = hoist_c c' in
+  Il1.print_c c'' 0;
   let c''' = lower_c c'' and defs' = lower_defs defs in
   translate_to_IL2 defs' (tc c''')
 
