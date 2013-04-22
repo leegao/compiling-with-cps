@@ -161,7 +161,6 @@ let rec ppTExp e =
 let rec ppTCom e = 
   match e with
     TApp (es) -> 
-      let es = [List.nth es 0; List.nth es 1; List.nth es 2] in
       let rec ppAppList = function
 	  [] -> ()
 	  | x::[] -> pp x
@@ -188,7 +187,6 @@ let rec ppTProg p =
        ppTCom c;
        close_box() )
   | TPLet (x,args,c,p') ->
-      let args = [List.nth args 0; List.nth args 1; List.nth args 2] in
       let rec ppArgList = function
 	  [] -> ()
 	  | x::[] -> pp x

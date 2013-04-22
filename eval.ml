@@ -2,8 +2,6 @@
 
 open Types
 
-let pp = Pprint.pp
-
 type fnclosure =
     TFnClosure of var * (var list) * tcom * (fnclosure list)
 
@@ -12,27 +10,6 @@ type tval =
   | TVTup of tval list
   | TVNum of int
   | TVHalt
-
-
-let rec ppTV tv = 
-  match tv with
-    TVFn(formals, body, fncontextlex) -> 
-      let rec ppvarlist = function
-        [] -> ()
-        | a::b::t -> (pp a; pp ", "; ppvarlist (b::t))
-        | b::[] -> (pp b)
-      in
-      (pp "function( "; ppvarlist formals; pp ")"; Pprint.ppTCom body)
-    | TVTup(vs) -> (pp"("; 
-		  let rec pptupl = function
-		      [] -> ()
-		    |	a::b::t -> (ppTV a; pp ", "; pptupl (b::t))
-		    |	b::[] -> (ppTV b)
-		  in
-		  pptupl vs;
-		  pp ")")
-    | TVNum(i) -> print_int i
-    | TVHalt -> pp "halt"
 
 exception EvalError of string
 exception EvalHalt of tval
@@ -66,8 +43,7 @@ let evalExp fncontext context exp =
       let v2 = evalVar fncontext context y in
       (match (v1, v2) with 
 	TVNum(i), TVNum(j) -> TVNum(i + j)
-      | _ ->  
-      raise (EvalError("Adding non-numbers")))
+      | _ ->  raise (EvalError("Adding non-numbers")))
   | TIfp(x, y, z) ->
       let v = evalVar fncontext context x in
       (match v with 
@@ -79,10 +55,9 @@ let rec evalCom fncontext (context:(var * tval) list) com =
     match formals,args with
       [],[] -> []
     | x::formals',e::args'->
-	    let v = evalVar fncontext context e in
-	    (x,v)::(buildContext formals' args')
-    | _ -> 
-      raise (EvalError("Incorrect number of args for fn"))
+	let v = evalVar fncontext context e in
+	(x,v)::(buildContext formals' args')
+    | _ -> raise (EvalError("Incorrect number of args for fn"))
   in
   match com with
     TCLet(x, e, com') -> 
@@ -90,18 +65,14 @@ let rec evalCom fncontext (context:(var * tval) list) com =
       evalCom fncontext ((x,v)::context) com'
   | TApp(f :: args) -> 
       let fn = evalVar fncontext context f in
-      (*pp f;
-      pp ":\n";
-      ppTV fn;
-      pp "\n\n\n\n\n";*)
       (match fn with 
-      | TVFn(formals, body, fncontextlex) -> 
-        let newcontext:(var * tval)list = buildContext formals args in
-        evalCom fncontextlex newcontext body
-          | TVHalt -> 
-        raise (EvalHalt(evalVar fncontext context (List.nth args 0)))
-          | _ -> raise (EvalError("Application to non function")))
-      | TApp([]) -> raise (EvalError("Empty app"))
+	TVFn(formals, body, fncontextlex) -> 
+	  let newcontext:(var * tval)list = buildContext formals args in
+	  evalCom fncontextlex newcontext body
+      | TVHalt -> 
+	  raise (EvalHalt(evalVar fncontext context (List.nth args 0)))
+      | _ -> raise (EvalError("Application to non function")))
+  | TApp([]) -> raise (EvalError("Empty app"))
 	
 	    
 let eval p = 
@@ -109,7 +80,7 @@ let eval p =
   let rec eval' fncontext p =
     match p with
       TPLet (x, args, body, p') -> 
-	    eval' (TFnClosure(x, args, body, fncontext)::fncontext) p'
+	eval' (TFnClosure(x, args, body, fncontext)::fncontext) p'
     | TCom (com) -> evalCom fncontext [] com
   in
   try 
